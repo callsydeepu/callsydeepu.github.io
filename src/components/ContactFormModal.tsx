@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Send, X, CheckCircle, Mail, AlertCircle } from "lucide-react";
+import { Send, X, CheckCircle, Mail, AlertCircle, ExternalLink } from "lucide-react";
+import { profile } from "../data";
 
 interface ContactFormModalProps {
   isOpen: boolean;
@@ -29,6 +30,13 @@ export function ContactFormModal({ isOpen, onClose }: ContactFormModalProps) {
     setIsSubmitting(true);
     setError(null);
 
+    const targetEmail = profile.email || "deepakambati5@gmail.com";
+    const mailtoUrl = `mailto:${targetEmail}?subject=${encodeURIComponent(
+      subject.trim() || `Project Inquiry from ${name.trim()}`
+    )}&body=${encodeURIComponent(
+      `Name: ${name.trim()}\nEmail: ${email.trim()}\n\nMessage:\n${message.trim()}`
+    )}`;
+
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
@@ -42,16 +50,18 @@ export function ContactFormModal({ isOpen, onClose }: ContactFormModalProps) {
         })
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Failed to deliver message. Please try again.");
+      if (res.ok) {
+        setSubmitted(true);
         return;
       }
 
+      // If backend is not hosted (GitHub Pages static host 404), fall back to mailto client
+      window.location.href = mailtoUrl;
       setSubmitted(true);
     } catch (err) {
-      setError("Network error. Please try again or reach out via email directly.");
+      // Offline or network error: fall back to mailto client directly
+      window.location.href = mailtoUrl;
+      setSubmitted(true);
     } finally {
       setIsSubmitting(false);
     }
