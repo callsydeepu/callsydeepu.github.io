@@ -11,7 +11,7 @@ export function Navbar() {
   const [isLightsOn, setIsLightsOn] = useState(false);
   const [activeSection, setActiveSection] = useState("#subject");
 
-  // Track scroll position for header background transition
+  // Track scroll position for header background elevation
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -20,7 +20,17 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Track active section for clean visual indicator
+  // Minimal, unnumbered navigation items matching editorial guidelines
+  const navItems = [
+    { label: "SUBJECT", href: "#subject" },
+    { label: "CASE FILES", href: "#case-files" },
+    { label: "TOOLKIT", href: "#toolkit" },
+    { label: "CERTIFICATIONS", href: "#certifications" },
+    { label: "JOURNEY", href: "#journey" },
+    { label: "HIRE ME", href: "#hire-me" }
+  ];
+
+  // Active section tracking for precise visual indicator
   useEffect(() => {
     const handleActiveScroll = () => {
       const scrollPos = window.scrollY + 140;
@@ -83,16 +93,6 @@ export function Navbar() {
     );
   };
 
-  // Minimal, unnumbered navigation items matching editorial guidelines
-  const navItems = [
-    { label: "SUBJECT", href: "#subject" },
-    { label: "CASE FILES", href: "#case-files" },
-    { label: "TOOLKIT", href: "#toolkit" },
-    { label: "CERTIFICATIONS", href: "#certifications" },
-    { label: "JOURNEY", href: "#journey" },
-    { label: "HIRE ME", href: "#hire-me" }
-  ];
-
   const handleNavClick = (href: string) => {
     setMobileMenuOpen(false);
     setActiveSection(href);
@@ -114,28 +114,29 @@ export function Navbar() {
         {/* Monogram Brand / Logo */}
         <a
           href="#subject"
-          className="flex items-center gap-3 text-white group select-none shrink-0"
+          className="flex items-center gap-3.5 text-white group select-none shrink-0"
           aria-label="Sai Deepak Ambati Portfolio"
           onClick={() => {
             setMobileMenuOpen(false);
             setActiveSection("#subject");
           }}
         >
-          <span className="font-mono font-extrabold text-xs sm:text-sm tracking-widest text-[#0a0a0c] bg-[#e2ee5a] px-2 py-0.5 shadow-[0_0_15px_rgba(226,238,90,0.35)] group-hover:bg-white group-hover:text-[#0a0a0c] transition-colors">
+          {/* Yellow Monogram Box */}
+          <span className="font-mono font-extrabold text-xs sm:text-sm tracking-widest text-[#0a0a0c] bg-[#e2ee5a] px-2.5 py-1 shadow-[0_0_18px_rgba(226,238,90,0.35)] group-hover:bg-white group-hover:text-[#0a0a0c] transition-colors">
             {profile.initials}
           </span>
           <div className="flex flex-col">
-            <span className="font-condensed font-extrabold text-sm sm:text-base text-white tracking-wider uppercase leading-none group-hover:text-[#e2ee5a] transition-colors">
+            <span className="font-condensed font-extrabold text-sm sm:text-[15px] text-white tracking-[0.08em] uppercase leading-none group-hover:text-[#e2ee5a] transition-colors">
               SAI DEEPAK
             </span>
-            <span className="text-[9px] font-mono text-ivory-400/60 tracking-[0.2em] uppercase leading-tight mt-1">
+            <span className="text-[9px] font-mono text-zinc-400/70 tracking-[0.22em] uppercase leading-tight mt-1">
               PORTFOLIO IN SIX CHAPTERS
             </span>
           </div>
         </a>
 
         {/* Center Minimal Navigation (Desktop: Laptops & Wide Displays) */}
-        <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
+        <nav className="hidden lg:flex items-center gap-7 xl:gap-9">
           {navItems.map((item) => {
             const isActive = activeSection === item.href;
             return (
@@ -146,16 +147,25 @@ export function Navbar() {
                   e.preventDefault();
                   handleNavClick(item.href);
                 }}
-                className={`relative py-1 font-mono text-[11px] font-bold tracking-[0.16em] uppercase transition-colors whitespace-nowrap ${
+                className={`group relative py-1 text-xs font-mono font-medium tracking-[0.18em] uppercase transition-colors duration-200 whitespace-nowrap ${
                   isActive
-                    ? "text-[#e2ee5a]"
-                    : "text-white/70 hover:text-[#e2ee5a]"
+                    ? "text-[#e2ee5a] font-bold"
+                    : "text-zinc-300 hover:text-white"
                 }`}
               >
-                <span>{item.label}</span>
-                {isActive && (
+                <span className="relative z-10 group-hover:text-[#e2ee5a] transition-colors duration-200">
+                  {item.label}
+                </span>
+
+                {/* Active & Hover Underline Indicator */}
+                {isActive ? (
                   <span
-                    className="absolute -bottom-1.5 left-0 right-0 h-[1.5px] bg-[#e2ee5a] shadow-[0_0_8px_#e2ee5a]"
+                    className="absolute -bottom-1 left-0 right-0 h-[2px] bg-[#e2ee5a] shadow-[0_0_10px_rgba(226,238,90,0.7)] transition-all duration-300"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <span
+                    className="absolute -bottom-1 left-0 right-0 h-[1.5px] bg-[#e2ee5a] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left opacity-70"
                     aria-hidden="true"
                   />
                 )}
@@ -164,17 +174,17 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* Right Controls (Desktop): Lights, Resume & Admin Lock */}
-        <div className="hidden sm:flex items-center gap-3 shrink-0">
+        {/* Right Controls (Desktop: >= 1024px): Lights, Resume & Admin Lock */}
+        <div className="hidden lg:flex items-center gap-3 shrink-0">
           {/* Desktop LIGHTS ON / OFF Toggle */}
           <button
             type="button"
             onClick={toggleLights}
             aria-label={isLightsOn ? "Switch to Lights Off" : "Switch to Lights On"}
-            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-mono font-bold tracking-wider transition-all duration-300 cursor-pointer h-8 select-none ${
+            className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-mono font-bold tracking-wider transition-all duration-300 cursor-pointer h-8 select-none border ${
               isLightsOn
-                ? "bg-[#e2ee5a] text-[#0a0a0c] shadow-[0_0_15px_rgba(226,238,90,0.45)]"
-                : "bg-white/5 border border-white/15 text-ivory-200 hover:border-[#e2ee5a]/60 hover:text-[#e2ee5a]"
+                ? "bg-[#e2ee5a] text-[#0a0a0c] border-[#e2ee5a] shadow-[0_0_18px_rgba(226,238,90,0.45)]"
+                : "bg-white/5 border-white/15 text-zinc-300 hover:border-[#e2ee5a]/60 hover:text-[#e2ee5a] hover:bg-white/10"
             }`}
           >
             {isLightsOn ? <Sun size={13} /> : <Moon size={13} />}
@@ -186,7 +196,7 @@ export function Navbar() {
             href={profile.resumePdf}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/15 text-[11px] font-mono font-bold text-ivory-100 hover:border-[#e2ee5a] hover:text-[#e2ee5a] hover:bg-white/10 transition-all h-8 active:scale-95 whitespace-nowrap select-none"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/15 text-[11px] font-mono font-bold text-zinc-200 hover:border-[#e2ee5a] hover:text-[#e2ee5a] hover:bg-white/10 transition-all h-8 active:scale-95 whitespace-nowrap select-none"
           >
             <FileText size={12} />
             <span>RESUME</span>
@@ -205,7 +215,7 @@ export function Navbar() {
             }}
             title={isAuthenticated ? "Open CMS Dashboard" : "Admin CMS Login"}
             aria-label="Admin CMS Portal"
-            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/15 text-ivory-300 hover:border-[#e2ee5a] hover:text-[#e2ee5a] hover:bg-white/10 transition-all cursor-pointer relative active:scale-95 shrink-0"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/15 text-zinc-400 hover:border-[#e2ee5a] hover:text-[#e2ee5a] hover:bg-white/10 transition-all cursor-pointer relative active:scale-95 shrink-0"
           >
             <Lock size={12} />
             {isAuthenticated && (
@@ -214,20 +224,21 @@ export function Navbar() {
           </button>
         </div>
 
-        {/* Mobile Header Actions & Hamburger Toggle (Screens < 1024px) */}
-        <div className="flex lg:hidden items-center gap-2">
+        {/* Mobile / Tablet Controls (< 1024px) */}
+        <div className="flex lg:hidden items-center gap-2.5">
           {/* Quick Resume Pill on Mobile Header */}
           <a
             href={profile.resumePdf}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-white/5 border border-white/15 text-[10px] font-mono font-bold text-ivory-200 active:scale-95"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/5 border border-white/15 text-[10px] font-mono font-bold text-zinc-200 hover:text-[#e2ee5a] hover:border-[#e2ee5a] active:scale-95 transition-all"
             aria-label="View Resume"
           >
             <FileText size={11} />
             <span>RESUME</span>
           </a>
 
+          {/* Hamburger Menu Toggle */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -236,7 +247,7 @@ export function Navbar() {
             className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer border active:scale-90 ${
               mobileMenuOpen
                 ? "bg-[#e2ee5a] text-[#0a0a0c] border-[#e2ee5a] shadow-[0_0_15px_rgba(226,238,90,0.4)]"
-                : "bg-white/5 border-white/15 text-ivory-100 hover:border-[#e2ee5a]/60 hover:text-[#e2ee5a]"
+                : "bg-white/5 border-white/15 text-zinc-100 hover:border-[#e2ee5a]/60 hover:text-[#e2ee5a]"
             }`}
           >
             {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
@@ -262,7 +273,7 @@ export function Navbar() {
                   <span className="w-2 h-2 bg-[#e2ee5a] inline-block shadow-[0_0_8px_#e2ee5a]" />
                   <span>NAVIGATION DIRECTORY</span>
                 </div>
-                <span className="text-[10px] font-mono text-ivory-400">06 SECTIONS</span>
+                <span className="text-[10px] font-mono text-zinc-400">06 SECTIONS</span>
               </div>
 
               {/* Navigation Items (Unnumbered, Editorial Typography) */}
@@ -293,7 +304,7 @@ export function Navbar() {
                       ) : (
                         <ArrowUpRight
                           size={16}
-                          className="text-ivory-400/40 group-hover:text-[#e2ee5a] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all"
+                          className="text-zinc-500 group-hover:text-[#e2ee5a] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all"
                         />
                       )}
                     </button>
@@ -331,8 +342,8 @@ export function Navbar() {
               </a>
 
               {/* Admin Portal Entry on Mobile */}
-              <div className="flex items-center justify-between pt-2 text-[11px] font-mono text-ivory-400">
-                <span className="text-[10px] text-ivory-400/60 uppercase">AUTHOR: SAI DEEPAK AMBATI</span>
+              <div className="flex items-center justify-between pt-2 text-[11px] font-mono text-zinc-400">
+                <span className="text-[10px] text-zinc-500 uppercase">AUTHOR: SAI DEEPAK AMBATI</span>
                 <button
                   type="button"
                   onClick={() => {
@@ -343,7 +354,7 @@ export function Navbar() {
                       setIsLoginModalOpen(true);
                     }
                   }}
-                  className="inline-flex items-center gap-1.5 text-ivory-400 hover:text-[#e2ee5a] text-[11px] font-mono tracking-wider transition-colors py-1 px-2 border border-white/10 rounded"
+                  className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-[#e2ee5a] text-[11px] font-mono tracking-wider transition-colors py-1 px-2 border border-white/10 rounded"
                 >
                   <Lock size={12} className={isAuthenticated ? "text-[#e2ee5a]" : ""} />
                   <span>{isAuthenticated ? "CMS ACTIVE" : "ADMIN"}</span>
