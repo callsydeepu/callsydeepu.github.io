@@ -91,33 +91,35 @@ export function Navbar() {
           : "bg-gradient-to-b from-[#0a0a0c]/85 via-[#0a0a0c]/40 to-transparent py-4 border-b border-transparent"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 flex items-center justify-between">
-        {/* Monogram Brand / Logo */}
-        <a
-          href="#subject"
-          className="flex items-center gap-3.5 text-white group select-none shrink-0"
-          aria-label="Sai Deepak Ambati Portfolio"
-          onClick={() => {
-            setMobileMenuOpen(false);
-            setActiveSection("#subject");
-          }}
-        >
-          {/* Yellow Monogram Box */}
-          <span className="font-mono font-extrabold text-xs sm:text-sm tracking-widest text-[#0a0a0c] bg-[#e2ee5a] px-2.5 py-1 shadow-[0_0_18px_rgba(226,238,90,0.35)] group-hover:bg-white group-hover:text-[#0a0a0c] transition-colors">
-            {profile.initials}
-          </span>
-          <div className="flex flex-col">
-            <span className="font-condensed font-extrabold text-sm sm:text-[15px] text-white tracking-[0.08em] uppercase leading-none group-hover:text-[#e2ee5a] transition-colors">
-              SAI DEEPAK
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 flex items-center justify-between gap-4 xl:gap-8 w-full">
+        {/* Left: Brand / Logo */}
+        <div className="flex items-center justify-start shrink-0">
+          <a
+            href="#subject"
+            className="flex items-center gap-3 sm:gap-3.5 text-white group select-none shrink-0"
+            aria-label="Sai Deepak Ambati Portfolio"
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setActiveSection("#subject");
+            }}
+          >
+            {/* Yellow Monogram Box */}
+            <span className="inline-flex items-center justify-center font-mono font-extrabold text-xs sm:text-[13px] tracking-widest text-[#0a0a0c] bg-[#e2ee5a] px-2.5 py-1 rounded-[2px] shadow-[0_0_16px_rgba(226,238,90,0.35)] group-hover:bg-white group-hover:text-[#0a0a0c] transition-colors shrink-0">
+              {profile.initials}
             </span>
-            <span className="text-[9px] font-mono text-zinc-400/70 tracking-[0.22em] uppercase leading-tight mt-1">
-              PORTFOLIO IN SIX CHAPTERS
-            </span>
-          </div>
-        </a>
+            <div className="flex flex-col justify-center">
+              <span className="font-condensed font-extrabold text-[13px] sm:text-sm xl:text-[15px] text-white tracking-[0.08em] uppercase leading-tight group-hover:text-[#e2ee5a] transition-colors">
+                SAI DEEPAK
+              </span>
+              <span className="text-[8.5px] sm:text-[9px] font-mono text-zinc-400/80 tracking-[0.2em] uppercase leading-none mt-1">
+                PORTFOLIO IN SIX CHAPTERS
+              </span>
+            </div>
+          </a>
+        </div>
 
-        {/* Center Minimal Navigation (Desktop: Laptops & Wide Displays) */}
-        <nav className="hidden lg:flex items-center gap-7 xl:gap-9">
+        {/* Center: Minimal Navigation Links (Desktop: Laptops & Wide Displays) */}
+        <nav className="hidden lg:flex items-center justify-center flex-1 gap-4 lg:gap-5 xl:gap-7 2xl:gap-8">
           {navItems.map((item) => {
             const isActive = activeSection === item.href;
             return (
@@ -128,7 +130,7 @@ export function Navbar() {
                   e.preventDefault();
                   handleNavClick(item.href);
                 }}
-                className={`group relative py-1 text-xs font-mono font-medium tracking-[0.18em] uppercase transition-colors duration-200 whitespace-nowrap ${
+                className={`group relative inline-flex flex-col items-center justify-center py-1.5 px-0.5 text-[11px] xl:text-xs font-mono font-medium tracking-[0.16em] xl:tracking-[0.18em] uppercase transition-colors duration-200 whitespace-nowrap shrink-0 ${
                   isActive
                     ? "text-[#e2ee5a] font-bold"
                     : "text-zinc-300 hover:text-white"
@@ -138,15 +140,15 @@ export function Navbar() {
                   {item.label}
                 </span>
 
-                {/* Active & Hover Underline Indicator */}
+                {/* Active & Hover Underline Indicator Centered */}
                 {isActive ? (
                   <span
-                    className="absolute -bottom-1 left-0 right-0 h-[2px] bg-[#e2ee5a] shadow-[0_0_10px_rgba(226,238,90,0.7)] transition-all duration-300"
+                    className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#e2ee5a] shadow-[0_0_10px_rgba(226,238,90,0.7)] rounded-full transition-all duration-300"
                     aria-hidden="true"
                   />
                 ) : (
                   <span
-                    className="absolute -bottom-1 left-0 right-0 h-[1.5px] bg-[#e2ee5a] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left opacity-70"
+                    className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[#e2ee5a] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center rounded-full opacity-70"
                     aria-hidden="true"
                   />
                 )}
@@ -155,20 +157,20 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* Right Controls (Desktop: >= 1024px): Lights, Resume & Admin Lock */}
-        <div className="hidden lg:flex items-center gap-3 shrink-0">
+        {/* Right: Desktop Controls (>= 1024px): Lights, Resume & Admin Lock */}
+        <div className="hidden lg:flex items-center justify-end gap-2.5 xl:gap-3 shrink-0">
           {/* Desktop LIGHTS ON / OFF Toggle */}
           <button
             type="button"
             onClick={toggleLights}
             aria-label={isLightsOn ? "Switch to Lights Off" : "Switch to Lights On"}
-            className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-mono font-bold tracking-wider transition-all duration-300 cursor-pointer h-8 select-none border ${
+            className={`inline-flex items-center gap-1.5 xl:gap-2 px-3 xl:px-3.5 py-1.5 rounded-full text-[10.5px] xl:text-[11px] font-mono font-bold tracking-wider transition-all duration-300 cursor-pointer h-8 select-none border shrink-0 ${
               isLightsOn
                 ? "bg-[#e2ee5a] text-[#0a0a0c] border-[#e2ee5a] shadow-[0_0_18px_rgba(226,238,90,0.45)]"
                 : "bg-white/5 border-white/15 text-zinc-300 hover:border-[#e2ee5a]/60 hover:text-[#e2ee5a] hover:bg-white/10"
             }`}
           >
-            {isLightsOn ? <Sun size={13} /> : <Moon size={13} />}
+            {isLightsOn ? <Sun size={12.5} /> : <Moon size={12.5} />}
             <span className="whitespace-nowrap">{isLightsOn ? "LIGHTS OFF" : "LIGHTS ON"}</span>
           </button>
 
@@ -177,7 +179,7 @@ export function Navbar() {
             href={profile.resumePdf}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/15 text-[11px] font-mono font-bold text-zinc-200 hover:border-[#e2ee5a] hover:text-[#e2ee5a] hover:bg-white/10 transition-all h-8 active:scale-95 whitespace-nowrap select-none"
+            className="inline-flex items-center gap-1.5 px-3 xl:px-3.5 py-1.5 rounded-full bg-white/5 border border-white/15 text-[10.5px] xl:text-[11px] font-mono font-bold text-zinc-200 hover:border-[#e2ee5a] hover:text-[#e2ee5a] hover:bg-white/10 transition-all h-8 active:scale-95 whitespace-nowrap select-none shrink-0"
           >
             <FileText size={12} />
             <span>RESUME</span>
@@ -206,13 +208,13 @@ export function Navbar() {
         </div>
 
         {/* Mobile / Tablet Controls (< 1024px) */}
-        <div className="flex lg:hidden items-center gap-2.5">
+        <div className="flex lg:hidden items-center gap-2 sm:gap-2.5 shrink-0">
           {/* Quick Resume Pill on Mobile Header */}
           <a
             href={profile.resumePdf}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/5 border border-white/15 text-[10px] font-mono font-bold text-zinc-200 hover:text-[#e2ee5a] hover:border-[#e2ee5a] active:scale-95 transition-all"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/15 text-[10px] font-mono font-bold text-zinc-200 hover:text-[#e2ee5a] hover:border-[#e2ee5a] active:scale-95 transition-all"
             aria-label="View Resume"
           >
             <FileText size={11} />
