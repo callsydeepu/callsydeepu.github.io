@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ArrowUpRight, FileText, Lock, Sun, Moon } from "lucide-react";
+import { ArrowUpRight, FileText, Lock, Sun, Moon } from "lucide-react";
 import { profile } from "../data";
 import { usePortfolioData } from "../context/PortfolioContext";
 
@@ -8,7 +7,6 @@ export function Navbar() {
   const { isAuthenticated, setIsAdminOpen, setIsLoginModalOpen, isLightsOn, toggleLights } =
     usePortfolioData();
   const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("#subject");
 
   // Track scroll position for header background elevation
@@ -51,31 +49,7 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleActiveScroll);
   }, []);
 
-  // Lock background scroll when mobile menu is open
-  useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [mobileMenuOpen]);
-
-  // Close mobile menu on Escape key
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && mobileMenuOpen) {
-        setMobileMenuOpen(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [mobileMenuOpen]);
-
   const handleNavClick = (href: string) => {
-    setMobileMenuOpen(false);
     setActiveSection(href);
     const target = document.querySelector(href);
     if (target) {
@@ -86,39 +60,36 @@ export function Navbar() {
   return (
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled || mobileMenuOpen
-          ? "bg-[#0a0a0c]/90 backdrop-blur-md border-b border-white/10 py-3 sm:py-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
-          : "bg-gradient-to-b from-[#0a0a0c]/85 via-[#0a0a0c]/40 to-transparent py-4 sm:py-4.5 border-b border-transparent"
+        scrolled
+          ? "bg-[#0a0a0c]/90 backdrop-blur-md border-b border-white/10 py-2.5 sm:py-3 shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
+          : "bg-gradient-to-b from-[#0a0a0c]/85 via-[#0a0a0c]/40 to-transparent py-3 sm:py-4 border-b border-transparent"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 w-full flex items-center justify-between gap-6 lg:gap-8 xl:gap-12">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 xl:px-12 w-full flex items-center justify-between gap-3 sm:gap-6 lg:gap-8 xl:gap-12">
         {/* 1. Left: Brand / Logo Section */}
         <div className="flex items-center justify-start shrink-0">
           <a
             href="#subject"
-            className="flex items-center gap-3 sm:gap-3.5 text-white group select-none shrink-0"
+            className="flex items-center gap-2 sm:gap-3 text-white group select-none shrink-0"
             aria-label="Sai Deepak Ambati Portfolio"
-            onClick={() => {
-              setMobileMenuOpen(false);
-              setActiveSection("#subject");
-            }}
+            onClick={() => setActiveSection("#subject")}
           >
             {/* Yellow Monogram Box */}
-            <span className="inline-flex items-center justify-center font-mono font-extrabold text-xs sm:text-[13px] tracking-widest text-[#0a0a0c] bg-[#e2ee5a] px-2.5 py-1 rounded-[2px] shadow-[0_0_16px_rgba(226,238,90,0.35)] group-hover:bg-white group-hover:text-[#0a0a0c] transition-colors shrink-0">
+            <span className="inline-flex items-center justify-center font-mono font-extrabold text-[11px] sm:text-xs xl:text-[13px] tracking-widest text-[#0a0a0c] bg-[#e2ee5a] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-[2px] shadow-[0_0_16px_rgba(226,238,90,0.35)] group-hover:bg-white group-hover:text-[#0a0a0c] transition-colors shrink-0">
               {profile.initials}
             </span>
             <div className="flex flex-col justify-center">
-              <span className="font-condensed font-extrabold text-[13px] sm:text-sm xl:text-[15px] text-white tracking-[0.08em] uppercase leading-tight group-hover:text-[#e2ee5a] transition-colors">
+              <span className="font-condensed font-extrabold text-xs sm:text-sm xl:text-[15px] text-white tracking-[0.06em] sm:tracking-[0.08em] uppercase leading-tight group-hover:text-[#e2ee5a] transition-colors">
                 SAI DEEPAK
               </span>
-              <span className="text-[8.5px] sm:text-[9px] font-mono text-zinc-400/80 tracking-[0.2em] uppercase leading-none mt-1">
+              <span className="hidden xs:block text-[8px] sm:text-[9px] font-mono text-zinc-400/80 tracking-[0.16em] sm:tracking-[0.2em] uppercase leading-none mt-0.5 sm:mt-1">
                 PORTFOLIO IN SIX CHAPTERS
               </span>
             </div>
           </a>
         </div>
 
-        {/* 2. Center: Minimal Navigation Links Group */}
+        {/* 2. Center: Minimal Navigation Links Group (Desktop Only >= 1024px) */}
         <nav className="hidden lg:flex items-center justify-center gap-4 xl:gap-6 2xl:gap-7 shrink-0">
           {navItems.map((item) => {
             const isActive = activeSection === item.href;
@@ -157,7 +128,7 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* 3. Right: Action Controls Group */}
+        {/* 3. Right: Action Controls (Desktop + Mobile in single clean row) */}
         <div className="flex items-center justify-end shrink-0">
           {/* Desktop Controls (>= 1024px): Lights, Resume & Admin Lock */}
           <div className="hidden lg:flex items-center gap-2.5 xl:gap-3 shrink-0">
@@ -176,7 +147,7 @@ export function Navbar() {
               <span className="whitespace-nowrap">{isLightsOn ? "LIGHTS OFF" : "LIGHTS ON"}</span>
             </button>
 
-            {/* Resume Pill Button */}
+            {/* Desktop Resume Pill Button */}
             <a
               href={profile.resumePdf}
               target="_blank"
@@ -188,7 +159,7 @@ export function Navbar() {
               <ArrowUpRight size={11} className="opacity-70" />
             </a>
 
-            {/* Admin Lock Icon */}
+            {/* Desktop Admin Lock Icon */}
             <button
               type="button"
               onClick={() => {
@@ -209,147 +180,38 @@ export function Navbar() {
             </button>
           </div>
 
-          {/* Mobile / Tablet Controls (< 1024px) */}
-          <div className="flex lg:hidden items-center gap-2 sm:gap-2.5 shrink-0">
-            {/* Quick Resume Pill on Mobile Header */}
+          {/* Mobile Controls (< 1024px): Clean, Minimal Single Row (Lights Toggle + Resume, No Admin Lock, No Hamburger) */}
+          <div className="flex lg:hidden items-center gap-1.5 xs:gap-2 shrink-0">
+            {/* Mobile LIGHTS ON / OFF Toggle */}
+            <button
+              type="button"
+              onClick={toggleLights}
+              aria-label={isLightsOn ? "Switch to Lights Off" : "Switch to Lights On"}
+              className={`inline-flex items-center gap-1 xs:gap-1.5 px-2 xs:px-2.5 py-1 rounded-full text-[9.5px] xs:text-[10px] font-mono font-bold tracking-wider transition-all duration-300 cursor-pointer h-7 xs:h-7.5 select-none border shrink-0 ${
+                isLightsOn
+                  ? "bg-[#e2ee5a] text-[#0a0a0c] border-[#e2ee5a] shadow-[0_0_12px_rgba(226,238,90,0.4)]"
+                  : "bg-white/5 border-white/15 text-zinc-300 hover:border-[#e2ee5a]/60 hover:text-[#e2ee5a]"
+              }`}
+            >
+              {isLightsOn ? <Sun size={11} /> : <Moon size={11} />}
+              <span className="whitespace-nowrap">{isLightsOn ? "LIGHTS OFF" : "LIGHTS ON"}</span>
+            </button>
+
+            {/* Mobile Resume Pill Button */}
             <a
               href={profile.resumePdf}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/15 text-[10px] font-mono font-bold text-zinc-200 hover:text-[#e2ee5a] hover:border-[#e2ee5a] active:scale-95 transition-all"
+              className="inline-flex items-center gap-1 px-2 xs:px-2.5 py-1 rounded-full bg-white/5 border border-white/15 text-[9.5px] xs:text-[10px] font-mono font-bold text-zinc-200 hover:text-[#e2ee5a] hover:border-[#e2ee5a] transition-all h-7 xs:h-7.5 active:scale-95 whitespace-nowrap select-none shrink-0"
               aria-label="View Resume"
             >
-              <FileText size={11} />
+              <FileText size={10.5} />
               <span>RESUME</span>
+              <ArrowUpRight size={9.5} className="opacity-70 hidden xs:inline-block" />
             </a>
-
-            {/* Hamburger Menu Toggle */}
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-              aria-expanded={mobileMenuOpen}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer border active:scale-90 ${
-                mobileMenuOpen
-                  ? "bg-[#e2ee5a] text-[#0a0a0c] border-[#e2ee5a] shadow-[0_0_15px_rgba(226,238,90,0.4)]"
-                  : "bg-white/5 border-white/15 text-zinc-100 hover:border-[#e2ee5a]/60 hover:text-[#e2ee5a]"
-              }`}
-            >
-              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
           </div>
         </div>
       </div>
-
-      {/* Full-Screen Mobile Drawer Menu */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
-            className="lg:hidden fixed inset-x-0 top-[58px] bottom-0 bg-[#0a0a0c]/98 backdrop-blur-2xl border-t border-white/10 px-5 py-6 flex flex-col justify-between overflow-y-auto"
-            style={{ overscrollBehavior: "contain" }}
-          >
-            <div>
-              {/* Drawer Header */}
-              <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
-                <div className="text-[10px] font-mono text-[#e2ee5a] tracking-widest uppercase font-bold flex items-center gap-2">
-                  <span className="w-2 h-2 bg-[#e2ee5a] inline-block shadow-[0_0_8px_#e2ee5a]" />
-                  <span>NAVIGATION DIRECTORY</span>
-                </div>
-                <span className="text-[10px] font-mono text-zinc-400">06 SECTIONS</span>
-              </div>
-
-              {/* Navigation Items (Unnumbered, Editorial Typography) */}
-              <nav className="flex flex-col divide-y divide-white/5">
-                {navItems.map((item) => {
-                  const isActive = activeSection === item.href;
-                  return (
-                    <button
-                      key={item.href}
-                      type="button"
-                      onClick={() => handleNavClick(item.href)}
-                      className={`flex items-center justify-between py-4 group text-left transition-colors active:bg-white/[0.03] px-2 ${
-                        isActive ? "bg-white/[0.02]" : ""
-                      }`}
-                    >
-                      <span
-                        className={`font-condensed font-extrabold text-2xl uppercase tracking-tight transition-colors ${
-                          isActive ? "text-[#e2ee5a]" : "text-white group-hover:text-[#e2ee5a]"
-                        }`}
-                      >
-                        {item.label}
-                      </span>
-                      {isActive ? (
-                        <span className="font-mono text-[10px] text-[#e2ee5a] tracking-widest uppercase flex items-center gap-1.5 font-bold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#e2ee5a] shadow-[0_0_6px_#e2ee5a]" />
-                          <span>ACTIVE</span>
-                        </span>
-                      ) : (
-                        <ArrowUpRight
-                          size={16}
-                          className="text-zinc-500 group-hover:text-[#e2ee5a] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all"
-                        />
-                      )}
-                    </button>
-                  );
-                })}
-              </nav>
-            </div>
-
-            {/* Bottom Controls Tray: Lights, Resume & Admin Access */}
-            <div className="pt-6 border-t border-white/10 space-y-3 mt-4">
-              {/* Lights Toggle on Mobile */}
-              <button
-                type="button"
-                onClick={toggleLights}
-                className={`w-full py-3 rounded-none font-mono text-xs font-bold tracking-wider uppercase flex items-center justify-center gap-2.5 transition-all border ${
-                  isLightsOn
-                    ? "bg-[#e2ee5a] text-[#0a0a0c] border-[#e2ee5a] shadow-[0_0_20px_rgba(226,238,90,0.3)]"
-                    : "bg-white/5 border-white/15 text-[#e2ee5a] hover:bg-[#e2ee5a]/10"
-                }`}
-              >
-                {isLightsOn ? <Sun size={15} /> : <Moon size={15} />}
-                <span>{isLightsOn ? "LIGHTS OFF // RESTORE SHADOWS" : "LIGHTS ON // FULL ILLUMINATION"}</span>
-              </button>
-
-              {/* Download Resume Full Button */}
-              <a
-                href={profile.resumePdf}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full py-3 bg-white/10 hover:bg-white text-white hover:text-[#0a0a0c] font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all border border-white/15"
-              >
-                <FileText size={14} />
-                <span>DOWNLOAD RESUME (PDF)</span>
-                <ArrowUpRight size={13} />
-              </a>
-
-              {/* Admin Portal Entry on Mobile */}
-              <div className="flex items-center justify-between pt-2 text-[11px] font-mono text-zinc-400">
-                <span className="text-[10px] text-zinc-500 uppercase">AUTHOR: SAI DEEPAK AMBATI</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    if (isAuthenticated) {
-                      setIsAdminOpen(true);
-                    } else {
-                      setIsLoginModalOpen(true);
-                    }
-                  }}
-                  className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-[#e2ee5a] text-[11px] font-mono tracking-wider transition-colors py-1 px-2 border border-white/10 rounded"
-                >
-                  <Lock size={12} className={isAuthenticated ? "text-[#e2ee5a]" : ""} />
-                  <span>{isAuthenticated ? "CMS ACTIVE" : "ADMIN"}</span>
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </header>
   );
 }
