@@ -61,7 +61,7 @@ export function HeroSubject() {
     if (!heroEl) return;
 
     const onTouchStart = (e: TouchEvent) => {
-      if (!e.touches[0]) return;
+      if (!e.touches[0] || e.touches.length > 1) return;
       const rect = heroEl.getBoundingClientRect();
       const x = e.touches[0].clientX - rect.left;
       const y = e.touches[0].clientY - rect.top;
@@ -76,7 +76,7 @@ export function HeroSubject() {
     };
 
     const onTouchMove = (e: TouchEvent) => {
-      if (!e.touches[0]) return;
+      if (!e.touches[0] || e.touches.length > 1) return;
       const rect = heroEl.getBoundingClientRect();
       // Update target coordinates without triggering React state updates
       mousePos.current = {
@@ -85,8 +85,10 @@ export function HeroSubject() {
       };
     };
 
-    const onTouchEnd = () => {
-      setIsHovered(false);
+    const onTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length === 0) {
+        setIsHovered(false);
+      }
     };
 
     // Passive listeners allow fluid vertical scrolling without blockage

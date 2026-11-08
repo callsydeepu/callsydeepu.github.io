@@ -256,33 +256,13 @@ export function ChapterHireMe() {
   };
 
   // =========================================================================
-  // 2. DIRECT CLICK-AND-DRAG INTERACTION
+  // 2. DIRECT CLICK-AND-DRAG INTERACTION (DESKTOP & MOBILE TOUCH)
   // Grabs the hand directly, follows pointer 1:1, triggers pull threshold
   // =========================================================================
-  const handleHandPointerDown = (e: React.PointerEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (tweenRef.current) tweenRef.current.kill();
-
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    isDraggingRef.current = true;
-    setIsDragging(true);
-
-    const svgPt = getSvgPoint(e.clientX, e.clientY);
-    // Preserve exact grab offset so hand never jumps when grabbed
-    grabOffsetRef.current = {
-      x: svgPt.x - handStateRef.current.x,
-      y: svgPt.y - handStateRef.current.y
-    };
-  };
-
-  const handleHandPointerMove = (e: React.PointerEvent) => {
+  const onDragMove = useCallback((clientX: number, clientY: number) => {
     if (!isDraggingRef.current) return;
-    e.preventDefault();
-    e.stopPropagation();
 
-    const svgPt = getSvgPoint(e.clientX, e.clientY);
+    const svgPt = getSvgPoint(clientX, clientY);
     const targetX = svgPt.x - grabOffsetRef.current.x;
     const targetY = svgPt.y - grabOffsetRef.current.y;
 
@@ -294,17 +274,10 @@ export function ChapterHireMe() {
     // Direct 1:1 instant tracking without lag
     handStateRef.current = { x: clampedX, y: clampedY, rotate: dragRotate };
     setHandState({ x: clampedX, y: clampedY, rotate: dragRotate });
-  };
+  }, []);
 
-  const handleHandPointerUp = (e: React.PointerEvent) => {
+  const onDragEnd = useCallback(() => {
     if (!isDraggingRef.current) return;
-    e.stopPropagation();
-
-    try {
-      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch {
-      // Ignored
-    }
     isDraggingRef.current = false;
     setIsDragging(false);
 
@@ -328,6 +301,72 @@ export function ChapterHireMe() {
         }
       });
     }
+  }, []);
+
+  // Window-level safety listeners during active dragging for flawless mobile touch tracking
+  useEffect(() => {
+    const handleWindowPointerMove = (e: PointerEvent) => {
+      if (isDraggingRef.current) {
+        onDragMove(e.clientX, e.clientY);
+      }
+    };
+
+    const handleWindowPointerUp = () => {
+      if (isDraggingRef.current) {
+        onDragEnd();
+      }
+    };
+
+    window.addEventListener("pointermove", handleWindowPointerMove, { passive: true });
+    window.addEventListener("pointerup", handleWindowPointerUp);
+    window.addEventListener("pointercancel", handleWindowPointerUp);
+
+    return () => {
+      window.removeEventListener("pointermove", handleWindowPointerMove);
+      window.removeEventListener("pointerup", handleWindowPointerUp);
+      window.removeEventListener("pointercancel", handleWindowPointerUp);
+    };
+  }, [onDragMove, onDragEnd]);
+
+  const handleHandPointerDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (tweenRef.current) tweenRef.current.kill();
+
+    try {
+      (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    } catch {
+      // Handled seamlessly by window pointer listeners
+    }
+    isDraggingRef.current = true;
+    setIsDragging(true);
+
+    const svgPt = getSvgPoint(e.clientX, e.clientY);
+    // Preserve exact grab offset so hand never jumps when grabbed
+    grabOffsetRef.current = {
+      x: svgPt.x - handStateRef.current.x,
+      y: svgPt.y - handStateRef.current.y
+    };
+  };
+
+  const handleHandPointerMove = (e: React.PointerEvent) => {
+    if (!isDraggingRef.current) return;
+    e.preventDefault();
+    e.stopPropagation();
+    onDragMove(e.clientX, e.clientY);
+  };
+
+  const handleHandPointerUp = (e: React.PointerEvent) => {
+    if (!isDraggingRef.current) return;
+    e.stopPropagation();
+
+    try {
+      (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+    } catch {
+      // Ignored
+    }
+    onDragEnd();
   };
 
   return (
@@ -383,277 +422,294 @@ export function ChapterHireMe() {
                       ? tension >= 0.8
                         ? "RELEASE TO OPEN CONTACT SECTION!"
                         : `PULLING... ${Math.round(tension * 100)}%`
-                      : "HOVER TO GUIDE • GRAB & DRAG TO PULL"}
+                      : "TOUCH & DRAG HAND TO PULL • OR TAP START A PROJECT"}
                   </span>
                 </div>
               </div>
 
               {/* MAIN INTERACTIVE STAGE */}
-              <div className="relative w-full max-w-5xl h-[340px] sm:h-[420px] md:h-[460px] mx-auto flex items-center justify-center my-2 sm:my-4">
-                {/* FLOATING KINETIC WORDS: Appear dynamically as tension increases */}
-                <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
-                  <span
-                    style={{
-                      opacity: tension > 0.35 ? (tension - 0.35) * 1.5 : 0,
-                      transform: `translate(${-tension * 18}px, ${-tension * 12}px) rotate(-8deg)`
-                    }}
-                    className="absolute top-[12%] right-[32%] sm:right-[36%] font-display font-extrabold text-lg sm:text-2xl md:text-3xl text-[#0a0a0c] tracking-tight transition-all duration-150"
-                  >
-                    TOGETHER
-                  </span>
+              <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center my-2 sm:my-4">
+                {/* Visual Stage Container for SVG & Kinetic Words */}
+                <div className="relative w-full h-[220px] xs:h-[260px] sm:h-[340px] md:h-[420px] flex items-center justify-center overflow-visible">
+                  {/* FLOATING KINETIC WORDS: Appear dynamically as tension increases */}
+                  <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+                    <span
+                      style={{
+                        opacity: tension > 0.35 ? (tension - 0.35) * 1.5 : 0,
+                        transform: `translate(${-tension * 18}px, ${-tension * 12}px) rotate(-8deg)`
+                      }}
+                      className="absolute top-[12%] right-[32%] sm:right-[36%] font-display font-extrabold text-lg sm:text-2xl md:text-3xl text-[#0a0a0c] tracking-tight transition-all duration-150"
+                    >
+                      TOGETHER
+                    </span>
 
-                  <span
-                    style={{
-                      opacity: tension > 0.4 ? (tension - 0.4) * 1.6 : 0,
-                      transform: `translate(${tension * 12}px, ${-tension * 8}px) rotate(12deg)`
-                    }}
-                    className="absolute top-[16%] right-[10%] sm:right-[16%] font-display font-extrabold text-base sm:text-xl md:text-2xl text-[#0a0a0c] tracking-tight transition-all duration-150"
-                  >
-                    HELLO
-                  </span>
+                    <span
+                      style={{
+                        opacity: tension > 0.4 ? (tension - 0.4) * 1.6 : 0,
+                        transform: `translate(${tension * 12}px, ${-tension * 8}px) rotate(12deg)`
+                      }}
+                      className="absolute top-[16%] right-[10%] sm:right-[16%] font-display font-extrabold text-base sm:text-xl md:text-2xl text-[#0a0a0c] tracking-tight transition-all duration-150"
+                    >
+                      HELLO
+                    </span>
 
-                  <span
-                    style={{
-                      opacity: tension > 0.25 ? (tension - 0.25) * 1.4 : 0,
-                      transform: `translate(${-tension * 22}px, 0px) rotate(-4deg)`
-                    }}
-                    className="absolute top-[28%] left-[44%] sm:left-[42%] font-display font-extrabold text-xl sm:text-2xl md:text-3xl text-[#0a0a0c] tracking-tight transition-all duration-150"
-                  >
-                    SHIP
-                  </span>
+                    <span
+                      style={{
+                        opacity: tension > 0.25 ? (tension - 0.25) * 1.4 : 0,
+                        transform: `translate(${-tension * 22}px, 0px) rotate(-4deg)`
+                      }}
+                      className="absolute top-[28%] left-[44%] sm:left-[42%] font-display font-extrabold text-xl sm:text-2xl md:text-3xl text-[#0a0a0c] tracking-tight transition-all duration-150"
+                    >
+                      SHIP
+                    </span>
 
-                  <span
-                    style={{
-                      opacity: tension > 0.3 ? (tension - 0.3) * 1.5 : 0,
-                      transform: `translate(${-tension * 14}px, ${tension * 12}px) rotate(-6deg)`
-                    }}
-                    className="absolute bottom-[16%] right-[38%] sm:right-[42%] font-display font-extrabold text-xl sm:text-3xl md:text-4xl text-[#0a0a0c] tracking-tight transition-all duration-150"
-                  >
-                    BUILD
-                  </span>
+                    <span
+                      style={{
+                        opacity: tension > 0.3 ? (tension - 0.3) * 1.5 : 0,
+                        transform: `translate(${-tension * 14}px, ${tension * 12}px) rotate(-6deg)`
+                      }}
+                      className="absolute bottom-[16%] right-[38%] sm:right-[42%] font-display font-extrabold text-xl sm:text-3xl md:text-4xl text-[#0a0a0c] tracking-tight transition-all duration-150"
+                    >
+                      BUILD
+                    </span>
 
-                  <span
-                    style={{
-                      opacity: tension > 0.2 ? (tension - 0.2) * 1.3 : 0,
-                      transform: `translate(${tension * 16}px, ${tension * 14}px) rotate(1deg)`
-                    }}
-                    className="absolute bottom-[14%] right-[16%] sm:right-[22%] font-display font-extrabold text-2xl sm:text-4xl md:text-5xl text-[#e24a4a] tracking-tight transition-all duration-150"
-                  >
-                    TALK
-                  </span>
+                    <span
+                      style={{
+                        opacity: tension > 0.2 ? (tension - 0.2) * 1.3 : 0,
+                        transform: `translate(${tension * 16}px, ${tension * 14}px) rotate(1deg)`
+                      }}
+                      className="absolute bottom-[14%] right-[16%] sm:right-[22%] font-display font-extrabold text-2xl sm:text-4xl md:text-5xl text-[#e24a4a] tracking-tight transition-all duration-150"
+                    >
+                      TALK
+                    </span>
 
-                  <span
-                    style={{
-                      opacity: tension > 0.45 ? (tension - 0.45) * 1.8 : 0,
-                      transform: `translate(${tension * 20}px, 0px) rotate(-3deg)`
-                    }}
-                    className="absolute top-[48%] right-[6%] sm:right-[12%] font-display font-extrabold text-lg sm:text-2xl md:text-3xl text-[#0a0a0c] tracking-tight transition-all duration-150"
+                    <span
+                      style={{
+                        opacity: tension > 0.45 ? (tension - 0.45) * 1.8 : 0,
+                        transform: `translate(${tension * 20}px, 0px) rotate(-3deg)`
+                      }}
+                      className="absolute top-[48%] right-[6%] sm:right-[12%] font-display font-extrabold text-lg sm:text-2xl md:text-3xl text-[#0a0a0c] tracking-tight transition-all duration-150"
+                    >
+                      LET'S
+                    </span>
+                  </div>
+
+                  {/* SVG CANVAS */}
+                  <svg
+                    ref={svgRef}
+                    viewBox="0 0 920 420"
+                    className="w-full h-full overflow-visible touch-none select-none"
+                    preserveAspectRatio="xMidYMid meet"
                   >
-                    LET'S
-                  </span>
+                    <defs>
+                      <linearGradient id="btnGlossGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.32" />
+                        <stop offset="45%" stopColor="#ffffff" stopOpacity="0.08" />
+                        <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                      </linearGradient>
+
+                      <linearGradient id="pullLightSweep" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
+                        <stop offset="50%" stopColor="#ffffff" stopOpacity="0.35" />
+                        <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                      </linearGradient>
+
+                      <filter id="btnShadow" x="-25%" y="-25%" width="150%" height="150%">
+                        <feDropShadow dx="0" dy="16" stdDeviation="16" floodColor="#000000" floodOpacity="0.4" />
+                      </filter>
+                    </defs>
+
+                    {/* STRINGS: Real-time curves connecting fingertips and button */}
+                    <g stroke="#0a0a0c" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                      <path d={d1} strokeWidth="1.6" opacity="0.9" />
+                      <path d={d2} strokeWidth="1.8" opacity="0.95" />
+                      <path d={d3} strokeWidth="2.0" opacity="1.0" />
+                      <path d={d4} strokeWidth="1.7" opacity="0.9" />
+                      <path d={d5} strokeWidth="1.5" opacity="0.85" />
+                    </g>
+
+                    {/* SUIT SLEEVE: Anchored on the left, flexibly stretches and rotates with the wrist */}
+                    <g id="suit-sleeve" className="pointer-events-none">
+                      <path
+                        d={`M -40 142 L ${wTop.x} ${wTop.y} L ${wBot.x} ${wBot.y} L -40 270 Z`}
+                        fill="#121216"
+                        stroke="#0a0a0c"
+                        strokeWidth="2.5"
+                        strokeLinejoin="round"
+                      />
+                      <line
+                        x1={seamTop.x}
+                        y1={seamTop.y}
+                        x2={seamBot.x}
+                        y2={seamBot.y}
+                        stroke="#25252c"
+                        strokeWidth="2"
+                      />
+
+                      {/* White Shirt Cuff following rotated 2D wrist */}
+                      <path
+                        d={`M ${wTop.x} ${wTop.y} L ${cuffTop.x} ${cuffTop.y} L ${cuffBot.x} ${cuffBot.y} L ${wBot.x} ${wBot.y} Z`}
+                        fill="#ffffff"
+                        stroke="#0a0a0c"
+                        strokeWidth="2"
+                        strokeLinejoin="round"
+                      />
+                      {/* Dark Cufflink */}
+                      <circle cx={cufflink.x} cy={cufflink.y} r="4" fill="#121216" stroke="#dedad0" strokeWidth="1" />
+                    </g>
+
+                    {/* DRAGGABLE & HOVER-TRACKING HAND: Follows cursor automatically on hover, and directly on grab */}
+                    <g
+                      id="draggable-hand"
+                      transform={`translate(${hX}, ${hY}) rotate(${hR}, 230, 210)`}
+                      onPointerDown={handleHandPointerDown}
+                      onPointerMove={handleHandPointerMove}
+                      onPointerUp={handleHandPointerUp}
+                      onPointerCancel={handleHandPointerUp}
+                      className={`${
+                        isDragging ? "cursor-grabbing" : "cursor-grab"
+                      } touch-none select-none`}
+                      style={{ touchAction: "none" }}
+                    >
+                      {/* Generous grab hit-area for touch and mouse */}
+                      <rect
+                        x="130"
+                        y="90"
+                        width="270"
+                        height="240"
+                        fill="transparent"
+                        className="cursor-grab active:cursor-grabbing"
+                      />
+
+                      {/* Hand Contour */}
+                      <path
+                        d="M 230 162
+                           C 265 155, 295 160, 320 172
+                           C 330 176, 335 180, 335 184
+                           L 350 194
+                           C 356 199, 354 205, 348 208
+                           L 356 212
+                           C 362 217, 360 224, 352 227
+                           L 346 230
+                           C 350 236, 346 242, 338 244
+                           L 330 246
+                           C 334 252, 328 257, 318 256
+                           C 295 254, 260 252, 224 246 Z"
+                        fill="#EAE5DC"
+                        stroke="#0a0a0c"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+
+                      {/* Finger Lines terminating directly at the 5 string anchor points */}
+                      <path d="M 265 180 C 290 170, 315 174, 335 184" fill="none" stroke="#0a0a0c" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M 295 190 C 315 190, 335 196, 350 194" fill="none" stroke="#0a0a0c" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M 298 206 C 318 208, 338 214, 356 212" fill="none" stroke="#0a0a0c" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M 290 222 C 310 226, 328 230, 346 230" fill="none" stroke="#0a0a0c" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M 280 236 C 298 240, 314 244, 330 246" fill="none" stroke="#0a0a0c" strokeWidth="2" strokeLinecap="round" />
+
+                      {/* Realistic Palm Creases */}
+                      <path d="M 245 185 C 260 195, 275 205, 285 225" fill="none" stroke="#0a0a0c" strokeWidth="1.6" strokeLinecap="round" />
+                      <path d="M 265 180 C 275 190, 285 198, 292 215" fill="none" stroke="#0a0a0c" strokeWidth="1.4" strokeLinecap="round" />
+                    </g>
+
+                    {/* GLOSSY HIRE ME BUTTON (Pulls toward the hand in 2D) */}
+                    <g
+                      id="hire-me-button"
+                      transform={`translate(${btnCenterX}, ${btnCenterY}) rotate(${btnRotate}) translate(${-btnCenterX}, ${-btnCenterY})`}
+                      filter="url(#btnShadow)"
+                      className="cursor-pointer"
+                      onClick={() => setIsActivated(true)}
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Open contact form"
+                    >
+                      {/* Outer Bezel */}
+                      <rect
+                        x={btnCenterX - 118}
+                        y={btnCenterY - 41}
+                        width="236"
+                        height="82"
+                        rx="41"
+                        fill="#070709"
+                        stroke={tension >= 0.8 ? "#e2ee5a" : "#2a2a32"}
+                        strokeWidth="2.5"
+                      />
+
+                      {/* Inner Jet-Black Glossy Body */}
+                      <rect
+                        x={btnCenterX - 115}
+                        y={btnCenterY - 38}
+                        width="230"
+                        height="76"
+                        rx="38"
+                        fill="#0a0a0c"
+                      />
+
+                      {/* Specular Top Arc Highlight */}
+                      <path
+                        d={`M ${btnCenterX - 95} ${btnCenterY - 35} Q ${btnCenterX} ${btnCenterY - 37} ${btnCenterX + 95} ${btnCenterY - 35} C ${btnCenterX + 85} ${btnCenterY - 14}, ${btnCenterX - 85} ${btnCenterY - 14}, ${btnCenterX - 95} ${btnCenterY - 35} Z`}
+                        fill="url(#btnGlossGrad)"
+                      />
+
+                      {/* Dynamic Light Sweep on Drag */}
+                      <rect
+                        x={btnCenterX - 114}
+                        y={btnCenterY - 37}
+                        width="228"
+                        height="74"
+                        rx="37"
+                        fill="url(#pullLightSweep)"
+                        opacity={tension}
+                        className="pointer-events-none"
+                      />
+
+                      {/* "HIRE ME" Typography */}
+                      <text
+                        x={btnCenterX}
+                        y={btnCenterY + 9}
+                        textAnchor="middle"
+                        className="font-condensed font-extrabold uppercase text-white tracking-widest text-[30px] sm:text-[34px] select-none pointer-events-none"
+                        style={{ fontFamily: "'Oswald', 'Bebas Neue', 'Barlow Condensed', sans-serif" }}
+                        fill={tension >= 0.8 ? "#e2ee5a" : "#ffffff"}
+                      >
+                        HIRE ME
+                      </text>
+
+                      {/* Accent Yellow Dot */}
+                      <circle cx={btnCenterX + 82} cy={btnCenterY - 16} r="3" fill="#e2ee5a" />
+                    </g>
+                  </svg>
                 </div>
 
-                {/* SVG CANVAS */}
-                <svg
-                  ref={svgRef}
-                  viewBox="0 0 920 420"
-                  className="w-full h-full overflow-visible"
-                  preserveAspectRatio="xMidYMid meet"
-                >
-                  <defs>
-                    <linearGradient id="btnGlossGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#ffffff" stopOpacity="0.32" />
-                      <stop offset="45%" stopColor="#ffffff" stopOpacity="0.08" />
-                      <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-                    </linearGradient>
-
-                    <linearGradient id="pullLightSweep" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
-                      <stop offset="50%" stopColor="#ffffff" stopOpacity="0.35" />
-                      <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-                    </linearGradient>
-
-                    <filter id="btnShadow" x="-25%" y="-25%" width="150%" height="150%">
-                      <feDropShadow dx="0" dy="16" stdDeviation="16" floodColor="#000000" floodOpacity="0.4" />
-                    </filter>
-                  </defs>
-
-                  {/* STRINGS: Real-time curves connecting fingertips and button */}
-                  <g stroke="#0a0a0c" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                    <path d={d1} strokeWidth="1.6" opacity="0.9" />
-                    <path d={d2} strokeWidth="1.8" opacity="0.95" />
-                    <path d={d3} strokeWidth="2.0" opacity="1.0" />
-                    <path d={d4} strokeWidth="1.7" opacity="0.9" />
-                    <path d={d5} strokeWidth="1.5" opacity="0.85" />
-                  </g>
-
-                  {/* SUIT SLEEVE: Anchored on the left, flexibly stretches and rotates with the wrist */}
-                  <g id="suit-sleeve" className="pointer-events-none">
-                    <path
-                      d={`M -40 142 L ${wTop.x} ${wTop.y} L ${wBot.x} ${wBot.y} L -40 270 Z`}
-                      fill="#121216"
-                      stroke="#0a0a0c"
-                      strokeWidth="2.5"
-                      strokeLinejoin="round"
-                    />
-                    <line
-                      x1={seamTop.x}
-                      y1={seamTop.y}
-                      x2={seamBot.x}
-                      y2={seamBot.y}
-                      stroke="#25252c"
-                      strokeWidth="2"
-                    />
-
-                    {/* White Shirt Cuff following rotated 2D wrist */}
-                    <path
-                      d={`M ${wTop.x} ${wTop.y} L ${cuffTop.x} ${cuffTop.y} L ${cuffBot.x} ${cuffBot.y} L ${wBot.x} ${wBot.y} Z`}
-                      fill="#ffffff"
-                      stroke="#0a0a0c"
-                      strokeWidth="2"
-                      strokeLinejoin="round"
-                    />
-                    {/* Dark Cufflink */}
-                    <circle cx={cufflink.x} cy={cufflink.y} r="4" fill="#121216" stroke="#dedad0" strokeWidth="1" />
-                  </g>
-
-                  {/* DRAGGABLE & HOVER-TRACKING HAND: Follows cursor automatically on hover, and directly on grab */}
-                  <g
-                    id="draggable-hand"
-                    transform={`translate(${hX}, ${hY}) rotate(${hR}, 230, 210)`}
-                    onPointerDown={handleHandPointerDown}
-                    onPointerMove={handleHandPointerMove}
-                    onPointerUp={handleHandPointerUp}
-                    onPointerCancel={handleHandPointerUp}
-                    className={`${
-                      isDragging ? "cursor-grabbing" : "cursor-grab"
-                    } touch-none select-none`}
-                    style={{ touchAction: "none" }}
+                {/* PRIMARY ACTION CTAS: DIRECT START A PROJECT + DOSSIER ACCESS */}
+                <div className="w-full max-w-xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-6 sm:mt-8 px-2 z-20">
+                  {/* 1. Direct START A PROJECT Mailto CTA (Accessible immediately without dragging) */}
+                  <a
+                    href={startProjectMailto}
+                    className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 bg-[#0a0a0c] hover:bg-[#e2ee5a] text-[#e2ee5a] hover:text-[#0a0a0c] font-condensed font-extrabold text-base sm:text-lg uppercase tracking-wider transition-all duration-300 shadow-[0_0_25px_rgba(10,10,12,0.25)] hover:shadow-[0_0_35px_rgba(226,238,90,0.5)] active:scale-[0.98] select-none min-h-[48px] text-center"
+                    aria-label="Start a project via email"
                   >
-                    {/* Generous grab hit-area */}
-                    <rect
-                      x="160"
-                      y="120"
-                      width="240"
-                      height="180"
-                      fill="transparent"
-                      className="cursor-grab active:cursor-grabbing"
-                    />
+                    <span>START A PROJECT</span>
+                    <ArrowUpRight size={18} />
+                  </a>
 
-                    {/* Hand Contour */}
-                    <path
-                      d="M 230 162
-                         C 265 155, 295 160, 320 172
-                         C 330 176, 335 180, 335 184
-                         L 350 194
-                         C 356 199, 354 205, 348 208
-                         L 356 212
-                         C 362 217, 360 224, 352 227
-                         L 346 230
-                         C 350 236, 346 242, 338 244
-                         L 330 246
-                         C 334 252, 328 257, 318 256
-                         C 295 254, 260 252, 224 246 Z"
-                      fill="#EAE5DC"
-                      stroke="#0a0a0c"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-
-                    {/* Finger Lines terminating directly at the 5 string anchor points */}
-                    <path d="M 265 180 C 290 170, 315 174, 335 184" fill="none" stroke="#0a0a0c" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M 295 190 C 315 190, 335 196, 350 194" fill="none" stroke="#0a0a0c" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M 298 206 C 318 208, 338 214, 356 212" fill="none" stroke="#0a0a0c" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M 290 222 C 310 226, 328 230, 346 230" fill="none" stroke="#0a0a0c" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M 280 236 C 298 240, 314 244, 330 246" fill="none" stroke="#0a0a0c" strokeWidth="2" strokeLinecap="round" />
-
-                    {/* Realistic Palm Creases */}
-                    <path d="M 245 185 C 260 195, 275 205, 285 225" fill="none" stroke="#0a0a0c" strokeWidth="1.6" strokeLinecap="round" />
-                    <path d="M 265 180 C 275 190, 285 198, 292 215" fill="none" stroke="#0a0a0c" strokeWidth="1.4" strokeLinecap="round" />
-                  </g>
-
-                  {/* GLOSSY HIRE ME BUTTON (Pulls toward the hand in 2D) */}
-                  <g
-                    id="hire-me-button"
-                    transform={`translate(${btnCenterX}, ${btnCenterY}) rotate(${btnRotate}) translate(${-btnCenterX}, ${-btnCenterY})`}
-                    filter="url(#btnShadow)"
-                    className="cursor-pointer"
-                    onClick={() => setIsActivated(true)}
-                    role="button"
-                    tabIndex={0}
-                    aria-label="Open contact form"
-                  >
-                    {/* Outer Bezel */}
-                    <rect
-                      x={btnCenterX - 118}
-                      y={btnCenterY - 41}
-                      width="236"
-                      height="82"
-                      rx="41"
-                      fill="#070709"
-                      stroke={tension >= 0.8 ? "#e2ee5a" : "#2a2a32"}
-                      strokeWidth="2.5"
-                    />
-
-                    {/* Inner Jet-Black Glossy Body */}
-                    <rect
-                      x={btnCenterX - 115}
-                      y={btnCenterY - 38}
-                      width="230"
-                      height="76"
-                      rx="38"
-                      fill="#0a0a0c"
-                    />
-
-                    {/* Specular Top Arc Highlight */}
-                    <path
-                      d={`M ${btnCenterX - 95} ${btnCenterY - 35} Q ${btnCenterX} ${btnCenterY - 37} ${btnCenterX + 95} ${btnCenterY - 35} C ${btnCenterX + 85} ${btnCenterY - 14}, ${btnCenterX - 85} ${btnCenterY - 14}, ${btnCenterX - 95} ${btnCenterY - 35} Z`}
-                      fill="url(#btnGlossGrad)"
-                    />
-
-                    {/* Dynamic Light Sweep on Drag */}
-                    <rect
-                      x={btnCenterX - 114}
-                      y={btnCenterY - 37}
-                      width="228"
-                      height="74"
-                      rx="37"
-                      fill="url(#pullLightSweep)"
-                      opacity={tension}
-                      className="pointer-events-none"
-                    />
-
-                    {/* "HIRE ME" Typography */}
-                    <text
-                      x={btnCenterX}
-                      y={btnCenterY + 9}
-                      textAnchor="middle"
-                      className="font-condensed font-extrabold uppercase text-white tracking-widest text-[30px] sm:text-[34px] select-none pointer-events-none"
-                      style={{ fontFamily: "'Oswald', 'Bebas Neue', 'Barlow Condensed', sans-serif" }}
-                      fill={tension >= 0.8 ? "#e2ee5a" : "#ffffff"}
-                    >
-                      HIRE ME
-                    </text>
-
-                    {/* Accent Yellow Dot */}
-                    <circle cx={btnCenterX + 82} cy={btnCenterY - 16} r="3" fill="#e2ee5a" />
-                  </g>
-                </svg>
-
-                {/* Mobile Direct Tap Alternative */}
-                <div className="md:hidden flex flex-col items-center gap-2 mt-4 px-2">
+                  {/* 2. Direct Tap Alternative to Open Collaboration Dossier */}
                   <button
                     type="button"
                     onClick={() => setIsActivated(true)}
-                    className="w-full max-w-sm py-3.5 px-6 bg-[#0a0a0c] border border-[#e2ee5a]/40 text-[#e2ee5a] hover:bg-[#e2ee5a] hover:text-[#0a0a0c] font-mono text-xs font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(226,238,90,0.15)] flex items-center justify-center gap-2 transition-all cursor-pointer min-h-[44px] active:scale-95"
+                    className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3.5 sm:py-4 bg-black/5 hover:bg-black/10 border border-black/20 hover:border-black text-[#0a0a0c] font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer min-h-[48px] active:scale-[0.98]"
+                    aria-label="View full collaboration dossier"
                   >
-                    <span>TAP TO CONNECT / HIRE ME</span>
-                    <ArrowUpRight size={14} />
+                    <Move size={13} className="opacity-70" />
+                    <span>DRAG HAND OR VIEW DOSSIER</span>
                   </button>
-                  <span className="text-[10px] font-mono text-ivory-400/60 uppercase tracking-wider">
-                    TAP BUTTON OR DRAG HAND TO CONNECT
-                  </span>
+                </div>
+
+                {/* Informative Interaction Subtext */}
+                <div className="text-[10px] sm:text-[11px] font-mono text-[#78756d] uppercase tracking-wider mt-3 text-center">
+                  TOUCH &amp; DRAG HAND LEFT TO PULL • OR TAP START A PROJECT
                 </div>
               </div>
 
