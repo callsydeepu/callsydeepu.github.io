@@ -46,6 +46,15 @@ export function ChapterHireMe() {
   const { bio } = usePortfolioData();
   const [contactModalOpen, setContactModalOpen] = useState(false);
 
+  // Email parameters for START A PROJECT CTA
+  const recipientEmail = bio?.email || profile.email || "deepakambati5@gmail.com";
+  const projectEmailSubject = "Project Collaboration – Sai Deepak";
+  const projectEmailBody =
+    "Hi Sai Deepak,\r\n\r\nI came across your portfolio and would like to discuss a potential project or collaboration.\r\n\r\nProject details:\r\n\r\nLooking forward to hearing from you.";
+  const startProjectMailto = `mailto:${recipientEmail}?subject=${encodeURIComponent(
+    projectEmailSubject
+  )}&body=${encodeURIComponent(projectEmailBody)}`;
+
   // Single Coordinated State System for Hand, Fingers, Strings, and Button
   const [handState, setHandState] = useState({ x: 0, y: 0, rotate: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -743,7 +752,7 @@ export function ChapterHireMe() {
               {/* Primary Visual Focus: Prominent START A PROJECT CTA + DIRECT MESSAGE */}
               <div className="mb-12 sm:mb-24 pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-6 flex-wrap">
                 <a
-                  href={`mailto:${bio.email || profile.email}?subject=${encodeURIComponent("Project Collaboration – Sai Deepak")}`}
+                  href={startProjectMailto}
                   className="group relative inline-flex items-center justify-center gap-3 px-6 sm:px-12 py-4 sm:py-5 bg-[#e2ee5a] hover:bg-white text-[#0a0a0c] font-condensed font-extrabold text-base sm:text-xl md:text-2xl uppercase tracking-wider transition-all duration-300 shadow-[0_0_35px_rgba(226,238,90,0.35)] hover:shadow-[0_0_55px_rgba(226,238,90,0.65)] active:scale-[0.98] select-none min-h-[48px] text-center"
                 >
                   <span>START A PROJECT</span>

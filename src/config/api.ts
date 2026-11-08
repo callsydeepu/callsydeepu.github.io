@@ -47,3 +47,4 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
 
   return fetch(url, fetchOptions);
 }
+

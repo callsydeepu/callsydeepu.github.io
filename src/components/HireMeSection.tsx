@@ -506,7 +506,7 @@ export function HireMeSection() {
                   Location: Vadodara, Gujarat, India (UTC +05:30)
                 </span>
                 <a
-                  href={`mailto:${profile.email}?subject=Project%20Collaboration%20Inquiry%20via%20Portfolio`}
+                  href={`mailto:${profile.email}?subject=${encodeURIComponent("Project Collaboration – Sai Deepak")}&body=${encodeURIComponent("Hi Sai Deepak,\r\n\r\nI came across your portfolio and would like to discuss a potential project or collaboration.\r\n\r\nProject details:\r\n\r\nLooking forward to hearing from you.")}`}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent-yellow text-ink-950 font-mono text-xs font-bold hover:bg-accent-yellowLight transition-colors"
                 >
                   <Mail size={13} />

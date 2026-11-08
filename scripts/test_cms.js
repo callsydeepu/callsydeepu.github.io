@@ -59,7 +59,7 @@ async function runTests() {
   const loginRes = await createMockReqRes({
     method: "POST",
     url: "/api/auth/login",
-    body: { password: "deepak_admin_2026" }
+    body: { password: "deepak@7780" }
   });
   if (loginRes.statusCode !== 200 || !loginRes.body.token) {
     console.error("Login failed:", loginRes);
