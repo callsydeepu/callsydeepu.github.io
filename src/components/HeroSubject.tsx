@@ -97,10 +97,26 @@ export function HeroSubject() {
     setIsHovered(false);
   };
 
-  // GSAP Cinematic Entrance Sequence
+  // GSAP Cinematic Entrance Sequence & Coordinated Scroll Parallax
   useEffect(() => {
+    const heroEl = heroRef.current;
+    if (!heroEl) return;
+
+    const staggerEls = heroEl.querySelectorAll<HTMLElement>(".hero-stagger");
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+      const tl = gsap.timeline({
+        defaults: { ease: "power3.out" },
+        onComplete: () => {
+          // Ensure all hero elements are firmly at resting state once entrance finishes
+          if (staggerEls && staggerEls.length > 0) {
+            gsap.set(staggerEls, { opacity: 1, y: 0, clearProps: "transform" });
+          }
+        }
+      });
 
       // 1. Initials entrance (opacity + scale)
       if (initialsRef.current) {
@@ -132,85 +148,167 @@ export function HeroSubject() {
       }
 
       // 4. Staggered text & metadata entrance
-      tl.fromTo(
-        ".hero-stagger",
-        { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 0.85, stagger: 0.08, ease: "power2.out" },
-        "-=0.9"
-      );
+      if (staggerEls && staggerEls.length > 0) {
+        tl.fromTo(
+          staggerEls,
+          { opacity: 0, y: 28 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.85,
+            stagger: 0.07,
+            ease: "power2.out"
+          },
+          "-=0.9"
+        );
+      }
 
       // 5. Scroll-driven cinematic parallax exit towards Chapter 01
-      const prefersReducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-      ).matches;
-
-      if (!prefersReducedMotion && heroRef.current) {
+      if (!prefersReducedMotion) {
         if (initialsRef.current) {
-          gsap.to(initialsRef.current, {
-            yPercent: -22,
-            ease: "none",
-            scrollTrigger: {
-              trigger: heroRef.current,
-              start: "top top",
-              end: "bottom top",
-              scrub: 1
+          gsap.fromTo(
+            initialsRef.current,
+            { yPercent: 0 },
+            {
+              yPercent: -22,
+              ease: "none",
+              immediateRender: false,
+              scrollTrigger: {
+                trigger: heroEl,
+                start: "top top",
+                end: "bottom top",
+                scrub: true,
+                invalidateOnRefresh: true,
+                onLeaveBack: () => {
+                  if (initialsRef.current) gsap.set(initialsRef.current, { yPercent: 0 });
+                }
+              }
             }
-          });
+          );
         }
 
         if (yellowPanelRef.current) {
-          gsap.to(yellowPanelRef.current, {
-            yPercent: -15,
-            ease: "none",
-            scrollTrigger: {
-              trigger: heroRef.current,
-              start: "top top",
-              end: "bottom top",
-              scrub: 1
+          gsap.fromTo(
+            yellowPanelRef.current,
+            { yPercent: 0 },
+            {
+              yPercent: -15,
+              ease: "none",
+              immediateRender: false,
+              scrollTrigger: {
+                trigger: heroEl,
+                start: "top top",
+                end: "bottom top",
+                scrub: true,
+                invalidateOnRefresh: true,
+                onLeaveBack: () => {
+                  if (yellowPanelRef.current) gsap.set(yellowPanelRef.current, { yPercent: 0 });
+                }
+              }
             }
-          });
+          );
         }
 
         if (portraitRef.current) {
-          gsap.to(portraitRef.current, {
-            yPercent: -8,
-            ease: "none",
-            scrollTrigger: {
-              trigger: heroRef.current,
-              start: "top top",
-              end: "bottom top",
-              scrub: 1
+          gsap.fromTo(
+            portraitRef.current,
+            { yPercent: 0 },
+            {
+              yPercent: -8,
+              ease: "none",
+              immediateRender: false,
+              scrollTrigger: {
+                trigger: heroEl,
+                start: "top top",
+                end: "bottom top",
+                scrub: true,
+                invalidateOnRefresh: true,
+                onLeaveBack: () => {
+                  if (portraitRef.current) gsap.set(portraitRef.current, { yPercent: 0 });
+                }
+              }
             }
-          });
+          );
         }
 
-        gsap.to(".hero-stagger", {
-          opacity: 0.25,
-          y: -20,
-          stagger: 0.02,
-          ease: "none",
-          scrollTrigger: {
-            trigger: heroRef.current,
-            start: "25% top",
-            end: "bottom 15%",
-            scrub: 1
+        // Hero text exit parallax: Fades gently as user scrolls down toward Chapter 01,
+        // but reliably restores full opacity and position whenever returning to top
+        if (staggerEls && staggerEls.length > 0) {
+          gsap.fromTo(
+            staggerEls,
+            { opacity: 1, y: 0 },
+            {
+              opacity: 0.25,
+              y: -22,
+              stagger: 0.02,
+              ease: "none",
+              immediateRender: false,
+              scrollTrigger: {
+                trigger: heroEl,
+                start: "top top",
+                end: "bottom 20%",
+                scrub: 0.4,
+                invalidateOnRefresh: true,
+                onLeaveBack: () => {
+                  // Scrolling all the way back up: restore 100% full opacity immediately
+                  gsap.to(staggerEls, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.2,
+                    ease: "power1.out",
+                    overwrite: "auto"
+                  });
+                },
+                onEnterBack: () => {
+                  // Scrolling up back into hero
+                  gsap.to(staggerEls, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.2,
+                    ease: "power1.out",
+                    overwrite: "auto"
+                  });
+                },
+                onRefresh: (self) => {
+                  // When ScrollTrigger recalculates or after layout shifts:
+                  // if user is at or near the top, force full visibility
+                  if (self.progress === 0 || window.scrollY < 60) {
+                    gsap.set(staggerEls, { opacity: 1, y: 0 });
+                  }
+                }
+              }
+            }
+          );
+        }
+      }
+    }, heroEl);
+
+    // Initial spotlight centered on the portrait / hero right side
+    const rect = heroEl.getBoundingClientRect();
+    const initialX = rect.width > 768 ? rect.width * 0.72 : rect.width * 0.5;
+    const initialY = rect.height > 768 ? rect.height * 0.48 : rect.height * 0.38;
+    currentPos.current = { x: initialX, y: initialY };
+    mousePos.current = { x: initialX, y: initialY };
+    heroEl.style.setProperty("--spot-x", `${initialX}px`);
+    heroEl.style.setProperty("--spot-y", `${initialY}px`);
+
+    // Top-of-page scroll listener to ensure hero text is never left invisible
+    const handleScrollSafety = () => {
+      if (window.scrollY < 40 && staggerEls && staggerEls.length > 0) {
+        staggerEls.forEach((el) => {
+          const compOpacity = parseFloat(window.getComputedStyle(el).opacity);
+          if (compOpacity < 0.9) {
+            gsap.to(el, { opacity: 1, y: 0, duration: 0.2, overwrite: "auto" });
           }
         });
       }
-    }, heroRef);
+    };
+    window.addEventListener("scroll", handleScrollSafety, { passive: true });
 
-    // Initial spotlight centered on the portrait / hero right side
-    if (heroRef.current) {
-      const rect = heroRef.current.getBoundingClientRect();
-      const initialX = rect.width > 768 ? rect.width * 0.72 : rect.width * 0.5;
-      const initialY = rect.height > 768 ? rect.height * 0.48 : rect.height * 0.38;
-      currentPos.current = { x: initialX, y: initialY };
-      mousePos.current = { x: initialX, y: initialY };
-      heroRef.current.style.setProperty("--spot-x", `${initialX}px`);
-      heroRef.current.style.setProperty("--spot-y", `${initialY}px`);
-    }
-
-    return () => ctx.revert();
+    return () => {
+      window.removeEventListener("scroll", handleScrollSafety);
+      ctx.revert();
+    };
   }, []);
 
   return (
@@ -274,7 +372,7 @@ export function HeroSubject() {
       </div>
 
       {/* Main Grid Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 w-full relative z-25 my-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 w-full relative z-32 my-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
           {/* LEFT COLUMN: Editorial Subject Details */}
           <div className="lg:col-span-7 flex flex-col justify-center">
@@ -433,7 +531,7 @@ export function HeroSubject() {
       </div>
 
       {/* Bottom Chapter Marker */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 w-full pt-4 flex items-center justify-between text-[10px] font-mono text-ivory-400/60 z-25">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 w-full pt-4 flex items-center justify-between text-[10px] font-mono text-ivory-400/60 z-32">
         <span>01 // SUBJECT IDENTIFICATION</span>
         <a
           href="#about-subject"
