@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowDown, ArrowUpRight, Sparkles } from "lucide-react";
@@ -15,45 +15,39 @@ export function HeroSubject() {
   const initialsRef = useRef<HTMLDivElement>(null);
   const yellowPanelRef = useRef<HTMLDivElement>(null);
   const portraitRef = useRef<HTMLDivElement>(null);
+  const spotlightMoverRef = useRef<HTMLDivElement>(null);
 
   const [isHovered, setIsHovered] = useState(false);
 
-  // Coordinates for smooth cursor/touch-following spotlight
-  const mousePos = useRef({ x: 0, y: 0 });
-  const currentPos = useRef({ x: 0, y: 0 });
-  const rafId = useRef<number | null>(null);
+  // GSAP quickTo setters for 120fps hardware-accelerated compositor spotlight tracking
+  const quickToX = useRef<((val: number) => void) | null>(null);
+  const quickToY = useRef<((val: number) => void) | null>(null);
+  const rectCache = useRef<{ left: number; top: number; width: number; height: number; scrollY: number } | null>(null);
 
-  // Set initial resting spotlight position at portrait center
+  // Initialize GSAP quickTo and set default spotlight resting position
   useEffect(() => {
-    if (!heroRef.current) return;
+    if (!spotlightMoverRef.current || !heroRef.current) return;
+
     const rect = heroRef.current.getBoundingClientRect();
-    const defaultX = rect.width * 0.65;
-    const defaultY = rect.height * 0.42;
-    mousePos.current = { x: defaultX, y: defaultY };
-    currentPos.current = { x: defaultX, y: defaultY };
-    heroRef.current.style.setProperty("--spot-x", `${defaultX.toFixed(1)}px`);
-    heroRef.current.style.setProperty("--spot-y", `${defaultY.toFixed(1)}px`);
+    const defaultX = rect.width > 768 ? rect.width * 0.72 : rect.width * 0.5;
+    const defaultY = rect.height > 768 ? rect.height * 0.48 : rect.height * 0.38;
+
+    gsap.set(spotlightMoverRef.current, {
+      x: defaultX,
+      y: defaultY,
+      force3D: true
+    });
+
+    quickToX.current = gsap.quickTo(spotlightMoverRef.current, "x", {
+      duration: 0.22,
+      ease: "power2.out"
+    });
+
+    quickToY.current = gsap.quickTo(spotlightMoverRef.current, "y", {
+      duration: 0.22,
+      ease: "power2.out"
+    });
   }, []);
-
-  // Smooth spotlight movement interpolation with natural glide
-  const updateSpotlight = useCallback(() => {
-    if (!heroRef.current) return;
-
-    currentPos.current.x += (mousePos.current.x - currentPos.current.x) * 0.18;
-    currentPos.current.y += (mousePos.current.y - currentPos.current.y) * 0.18;
-
-    heroRef.current.style.setProperty("--spot-x", `${currentPos.current.x.toFixed(1)}px`);
-    heroRef.current.style.setProperty("--spot-y", `${currentPos.current.y.toFixed(1)}px`);
-
-    rafId.current = requestAnimationFrame(updateSpotlight);
-  }, []);
-
-  useEffect(() => {
-    rafId.current = requestAnimationFrame(updateSpotlight);
-    return () => {
-      if (rafId.current) cancelAnimationFrame(rafId.current);
-    };
-  }, [updateSpotlight]);
 
   // High-performance native touch listeners for mobile & tablet devices
   useEffect(() => {
@@ -63,31 +57,59 @@ export function HeroSubject() {
     const onTouchStart = (e: TouchEvent) => {
       if (!e.touches[0] || e.touches.length > 1) return;
       const rect = heroEl.getBoundingClientRect();
+      const scrollY = window.scrollY;
+      rectCache.current = {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height,
+        scrollY
+      };
+
       const x = e.touches[0].clientX - rect.left;
       const y = e.touches[0].clientY - rect.top;
 
-      // Prevent jumping: align current and target position instantly on first touch
-      mousePos.current = { x, y };
-      currentPos.current = { x, y };
-      heroEl.style.setProperty("--spot-x", `${x.toFixed(1)}px`);
-      heroEl.style.setProperty("--spot-y", `${y.toFixed(1)}px`);
+      // Instant snap on initial touch to eliminate lag or jump
+      if (spotlightMoverRef.current) {
+        gsap.set(spotlightMoverRef.current, { x, y });
+      }
+      if (quickToX.current && quickToY.current) {
+        quickToX.current(x);
+        quickToY.current(y);
+      }
 
       setIsHovered(true);
     };
 
     const onTouchMove = (e: TouchEvent) => {
       if (!e.touches[0] || e.touches.length > 1) return;
-      const rect = heroEl.getBoundingClientRect();
-      // Update target coordinates without triggering React state updates
-      mousePos.current = {
-        x: e.touches[0].clientX - rect.left,
-        y: e.touches[0].clientY - rect.top
-      };
+      if (!rectCache.current) {
+        const rect = heroEl.getBoundingClientRect();
+        rectCache.current = {
+          left: rect.left,
+          top: rect.top,
+          width: rect.width,
+          height: rect.height,
+          scrollY: window.scrollY
+        };
+      }
+
+      // Compute coordinates relative to container using cached rect + scroll delta
+      // Eliminates synchronous getBoundingClientRect layout thrashing on every touchmove
+      const scrollDelta = window.scrollY - rectCache.current.scrollY;
+      const x = e.touches[0].clientX - rectCache.current.left;
+      const y = e.touches[0].clientY - (rectCache.current.top - scrollDelta);
+
+      if (quickToX.current && quickToY.current) {
+        quickToX.current(x);
+        quickToY.current(y);
+      }
     };
 
     const onTouchEnd = (e: TouchEvent) => {
       if (e.touches.length === 0) {
         setIsHovered(false);
+        rectCache.current = null;
       }
     };
 
@@ -113,18 +135,22 @@ export function HeroSubject() {
     const rect = heroRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    mousePos.current = { x, y };
-    currentPos.current = { x, y };
+    if (quickToX.current && quickToY.current) {
+      quickToX.current(x);
+      quickToY.current(y);
+    }
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLElement>) => {
     if (e.pointerType === "touch") return;
     if (!heroRef.current) return;
     const rect = heroRef.current.getBoundingClientRect();
-    mousePos.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    if (quickToX.current && quickToY.current) {
+      quickToX.current(x);
+      quickToY.current(y);
+    }
   };
 
   const handlePointerLeave = (e: React.PointerEvent<HTMLElement>) => {
@@ -317,15 +343,6 @@ export function HeroSubject() {
         }
       }
     }, heroEl);
-
-    // Initial spotlight centered on the portrait / hero right side
-    const rect = heroEl.getBoundingClientRect();
-    const initialX = rect.width > 768 ? rect.width * 0.72 : rect.width * 0.5;
-    const initialY = rect.height > 768 ? rect.height * 0.48 : rect.height * 0.38;
-    currentPos.current = { x: initialX, y: initialY };
-    mousePos.current = { x: initialX, y: initialY };
-    heroEl.style.setProperty("--spot-x", `${initialX}px`);
-    heroEl.style.setProperty("--spot-y", `${initialY}px`);
 
     // Top-of-page scroll listener to ensure hero text is never left invisible
     const handleScrollSafety = () => {
@@ -527,36 +544,42 @@ export function HeroSubject() {
         className="absolute inset-0 pointer-events-none z-30 transition-opacity duration-700 ease-out"
         style={{
           opacity: !isLightsOn && !isHovered ? 1 : 0,
-          background: `radial-gradient(circle clamp(260px, 42vw, 420px) at var(--spot-x, 50%) var(--spot-y, 40%), rgba(226,238,90,0.08) 0%, rgba(17,17,17,0.52) 55%, rgba(17,17,17,0.90) 100%)`
-        }}
-        aria-hidden="true"
-      />
-
-      {/* Active interactive spotlight layer (smoothly fades in on touch / hover) */}
-      <div
-        className="absolute inset-0 pointer-events-none z-30 transition-opacity duration-400 ease-out"
-        style={{
-          opacity: !isLightsOn && isHovered ? 1 : 0,
-          background: `radial-gradient(circle clamp(220px, 35vw, 320px) at var(--spot-x, 50%) var(--spot-y, 45%), rgba(255,255,255,0.02) 0%, rgba(226,238,90,0.12) 30%, rgba(17,17,17,0.68) 65%, rgba(17,17,17,0.94) 100%)`
-        }}
-        aria-hidden="true"
-      />
-
-      {/* Center Specular Glare directly beneath touch point / cursor */}
-      <div
-        className="absolute pointer-events-none z-35 rounded-full -translate-x-1/2 -translate-y-1/2 transition-opacity duration-300 ease-out"
-        style={{
-          opacity: !isLightsOn && isHovered ? 1 : 0,
-          left: "var(--spot-x, 50%)",
-          top: "var(--spot-y, 45%)",
-          width: "140px",
-          height: "140px",
           background:
-            "radial-gradient(circle, rgba(255,255,255,0.36) 0%, rgba(226,238,90,0.16) 45%, transparent 70%)",
-          filter: "blur(12px)"
+            "radial-gradient(circle clamp(260px, 42vw, 420px) at 65% 42%, rgba(226,238,90,0.08) 0%, rgba(17,17,17,0.52) 55%, rgba(17,17,17,0.90) 100%)"
         }}
         aria-hidden="true"
       />
+
+      {/* Active hardware-accelerated spotlight mask & specular glare layer */}
+      <div
+        className="absolute inset-0 pointer-events-none z-30 transition-opacity duration-300 ease-out overflow-hidden"
+        style={{ opacity: !isLightsOn && isHovered ? 1 : 0 }}
+        aria-hidden="true"
+      >
+        <div
+          ref={spotlightMoverRef}
+          className="absolute top-0 left-0 pointer-events-none will-change-transform"
+          style={{
+            width: "300vw",
+            height: "300vh",
+            marginLeft: "-150vw",
+            marginTop: "-150vh",
+            background:
+              "radial-gradient(circle clamp(220px, 35vw, 320px) at center, rgba(255,255,255,0.02) 0%, rgba(226,238,90,0.12) 30%, rgba(17,17,17,0.68) 65%, rgba(17,17,17,0.94) 100%)"
+          }}
+        >
+          {/* Specular glare centered directly on touch point / cursor with soft gradient stops (zero CPU blur filter) */}
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+            style={{
+              width: "140px",
+              height: "140px",
+              background:
+                "radial-gradient(circle, rgba(255,255,255,0.36) 0%, rgba(226,238,90,0.16) 45%, transparent 70%)"
+            }}
+          />
+        </div>
+      </div>
 
 
 
