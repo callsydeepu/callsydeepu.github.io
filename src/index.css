@@ -17,12 +17,24 @@
   box-sizing: border-box;
 }
 
+/* Mobile Optimization & Touch Behavior */
+html {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   min-width: 320px;
+  max-width: 100vw;
   background: #0a0a0c;
   color: #eae7df;
   overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+img, svg, picture, video {
+  max-width: 100%;
 }
 
 a {

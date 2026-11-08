@@ -156,28 +156,28 @@ export function ChapterJourney() {
         </div>
 
         {/* Continuous Timeline Vertical Layout */}
-        <div ref={timelineContainerRef} className="relative max-w-4xl mx-auto pl-2 sm:pl-4">
+        <div ref={timelineContainerRef} className="relative max-w-4xl mx-auto pl-1 sm:pl-4">
           {/* Continuous Vertical Timeline Line */}
           <div
             ref={timelineLineRef}
-            className="absolute left-[20px] sm:left-[24px] top-6 bottom-6 w-[2px] bg-gradient-to-b from-[#e2ee5a] via-white/25 to-white/10 pointer-events-none z-0"
+            className="absolute left-[18px] sm:left-[24px] top-6 bottom-6 w-[2px] bg-gradient-to-b from-[#e2ee5a] via-white/25 to-white/10 pointer-events-none z-0"
           />
 
-          <div className="space-y-12 sm:space-y-16">
+          <div className="space-y-8 sm:space-y-16">
             {educationTimeline.map((item: EducationStage) => {
               const isCurrent = item.isCurrent;
 
               return (
                 <div
                   key={item.id}
-                  className="timeline-milestone-item relative flex items-start gap-5 sm:gap-8 group"
+                  className="timeline-milestone-item relative flex items-start gap-3 sm:gap-8 group"
                 >
                   {/* Numbered Milestone Node Indicator */}
                   <div className="relative z-10 shrink-0">
                     <div
-                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full font-mono font-extrabold text-xs sm:text-sm flex items-center justify-center transition-all duration-300 ${
+                      className={`w-9 h-9 sm:w-12 sm:h-12 rounded-full font-mono font-extrabold text-[11px] sm:text-sm flex items-center justify-center transition-all duration-300 ${
                         isCurrent
-                          ? "bg-[#e2ee5a] text-[#0a0a0c] shadow-[0_0_25px_rgba(226,238,90,0.5)] ring-4 ring-[#e2ee5a]/25 scale-105"
+                          ? "bg-[#e2ee5a] text-[#0a0a0c] shadow-[0_0_25px_rgba(226,238,90,0.5)] ring-3 sm:ring-4 ring-[#e2ee5a]/25 scale-105"
                           : "bg-[#141416] border border-white/25 text-ivory-300 group-hover:border-[#e2ee5a]/60 group-hover:text-white"
                       }`}
                     >
@@ -192,23 +192,23 @@ export function ChapterJourney() {
 
                   {/* Milestone Card Content */}
                   <div
-                    className={`flex-1 rounded-none p-6 sm:p-8 md:p-10 transition-all duration-300 border ${
+                    className={`flex-1 rounded-none p-4 sm:p-8 md:p-10 transition-all duration-300 border ${
                       isCurrent
                         ? "bg-gradient-to-br from-[#e2ee5a]/[0.06] via-[#141418] to-[#0a0a0c] border-[#e2ee5a]/40 shadow-[0_10px_40px_rgba(0,0,0,0.6)]"
                         : "bg-white/[0.02] border-white/10 hover:border-white/20 hover:bg-white/[0.03]"
                     }`}
                   >
                     {/* Top Row: Stage Metadata & Current Status Badge */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] sm:text-[11px] font-mono tracking-[0.2em] uppercase font-bold text-[#e2ee5a]">
+                    <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 mb-3 sm:mb-4">
+                      <div className="flex items-center gap-1.5 sm:gap-2">
+                        <span className="text-[9px] sm:text-[11px] font-mono tracking-[0.2em] uppercase font-bold text-[#e2ee5a]">
                           {item.level}
                         </span>
                         {item.period && (
                           <>
                             <span className="text-white/20 font-mono text-xs">//</span>
-                            <span className="text-xs font-mono text-ivory-400 flex items-center gap-1.5">
-                              <Calendar size={12} className="text-[#e2ee5a]" />
+                            <span className="text-[11px] sm:text-xs font-mono text-ivory-400 flex items-center gap-1">
+                              <Calendar size={11} className="text-[#e2ee5a]" />
                               <span>{item.period}</span>
                             </span>
                           </>
@@ -217,25 +217,25 @@ export function ChapterJourney() {
 
                       {/* Highlighted Status Tag for B.Tech */}
                       {item.status && (
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#e2ee5a] text-[#0a0a0c] font-mono text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider shadow-[0_0_15px_rgba(226,238,90,0.35)] select-none">
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#e2ee5a] text-[#0a0a0c] font-mono text-[9px] sm:text-[11px] font-extrabold uppercase tracking-wider shadow-[0_0_15px_rgba(226,238,90,0.35)] select-none">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#0a0a0c] animate-pulse" />
                           <span>{item.status}</span>
                         </div>
                       )}
                     </div>
 
-                    {/* Stage Title in Large Condensed Typography & Percentage Badge */}
-                    <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3">
-                      <h3 className="text-2xl sm:text-3xl md:text-4xl font-condensed font-extrabold text-white tracking-tight uppercase leading-[1.05]">
+                    {/* Stage Title in Condensed Typography & Percentage Badge */}
+                    <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2.5 sm:gap-3">
+                      <h3 className="text-xl sm:text-3xl md:text-4xl font-condensed font-extrabold text-white tracking-tight uppercase leading-[1.08] break-words">
                         {item.degreeTitle}
                       </h3>
 
                       {item.percentage && (
-                        <div className="journey-percentage shrink-0 inline-flex items-baseline gap-2 px-3.5 py-1.5 bg-[#e2ee5a]/10 border border-[#e2ee5a]/40 self-start sm:self-auto shadow-[0_0_20px_rgba(226,238,90,0.12)] group-hover:border-[#e2ee5a] group-hover:shadow-[0_0_25px_rgba(226,238,90,0.25)] transition-all duration-300">
-                          <span className="font-mono text-[10px] uppercase tracking-widest text-[#e2ee5a]/80 font-bold">
+                        <div className="journey-percentage shrink-0 inline-flex items-baseline gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1 sm:py-1.5 bg-[#e2ee5a]/10 border border-[#e2ee5a]/40 self-start sm:self-auto shadow-[0_0_20px_rgba(226,238,90,0.12)] group-hover:border-[#e2ee5a] group-hover:shadow-[0_0_25px_rgba(226,238,90,0.25)] transition-all duration-300">
+                          <span className="font-mono text-[9px] sm:text-[10px] uppercase tracking-widest text-[#e2ee5a]/80 font-bold">
                             PERCENTAGE
                           </span>
-                          <span className="font-condensed font-extrabold text-2xl sm:text-3xl text-[#e2ee5a] leading-none tracking-tight">
+                          <span className="font-condensed font-extrabold text-xl sm:text-3xl text-[#e2ee5a] leading-none tracking-tight">
                             {item.percentage}
                           </span>
                         </div>
@@ -243,18 +243,18 @@ export function ChapterJourney() {
                     </div>
 
                     {/* Institution & Location */}
-                    <div className="mt-4 pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm">
-                      <div className="flex items-center gap-2 text-ivory-200 font-sans font-medium text-base sm:text-lg">
+                    <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                      <div className="flex items-center gap-2 text-ivory-200 font-sans font-medium text-sm sm:text-lg">
                         {isCurrent ? (
-                          <GraduationCap size={18} className="text-[#e2ee5a] shrink-0" />
+                          <GraduationCap size={16} className="text-[#e2ee5a] shrink-0" />
                         ) : (
-                          <School size={18} className="text-ivory-400 shrink-0" />
+                          <School size={16} className="text-ivory-400 shrink-0" />
                         )}
                         <span>{item.institution}</span>
                       </div>
 
-                      <div className="flex items-center gap-1.5 text-xs sm:text-sm font-mono text-ivory-400">
-                        <MapPin size={13} className="text-[#e2ee5a]" />
+                      <div className="flex items-center gap-1.5 text-[11px] sm:text-sm font-mono text-ivory-400">
+                        <MapPin size={12} className="text-[#e2ee5a]" />
                         <span>{item.location}</span>
                       </div>
                     </div>

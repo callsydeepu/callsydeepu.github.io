@@ -17,7 +17,7 @@ interface TechGroup {
   lines: TechLine[];
 }
 
-// User's verified skills directly from resume (no extra skills)
+// User's verified skills directly from resume
 const defaultTechStackGroups: TechGroup[] = [
   {
     category: "PROGRAMMING LANGUAGES",
@@ -102,7 +102,8 @@ export function ChapterToolkit() {
         return;
       }
 
-      const isMobile = window.innerWidth < 640;
+      const isMobile = window.innerWidth < 768;
+      const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
       // 1. Initial Header Appearance
       if (badgeRef.current && headingRef.current) {
@@ -136,7 +137,7 @@ export function ChapterToolkit() {
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: row,
-            start: "top 86%",
+            start: "top 88%",
             toggleActions: "play none none reverse",
             fastScrollEnd: true,
             onLeaveBack: () => {
@@ -155,191 +156,159 @@ export function ChapterToolkit() {
             {
               opacity: 1,
               y: 0,
-              duration: 0.4,
+              duration: 0.35,
               ease: "power2.out"
             }
           );
         }
 
-        // Step B: Staggered Kinetic Typography reveal for individual technology words
-        // Optimized: Uses GPU-accelerated transform & opacity; avoids heavy real-time CSS filter blurring
+        // Step B: Staggered reveal for words
         if (words.length > 0) {
           tl.fromTo(
             words,
             {
-              opacity: 0,
-              y: isMobile ? 18 : 28
+              y: isMobile ? 18 : 30,
+              opacity: 0
             },
             {
-              opacity: 1,
               y: 0,
-              duration: isMobile ? 0.45 : 0.55,
-              stagger: isMobile ? 0.04 : 0.05,
+              opacity: 1,
+              duration: isMobile ? 0.45 : 0.65,
+              stagger: isMobile ? 0.04 : 0.07,
               ease: "power3.out",
-              force3D: true,
               onComplete: () => {
-                // Allow magnifying hover to expand freely without mask clipping
                 masks.forEach((m) => {
                   m.style.overflow = "visible";
                 });
               }
             },
-            "-=0.2" // smooth overlap with the category label reveal
+            "-=0.15"
           );
         }
       });
 
-      // 3. High-Performance Magnifying Hover & Magnetic Effect (Using quickTo & GPU composited glow)
-      const magnifyItems = rowsRef.current?.querySelectorAll<HTMLElement>(".tech-magnify-item");
+      // 3. Magnifying Hover Effect on Desktop, Subtle Tap Feedback on Touch
+      const techItems = rowsRef.current?.querySelectorAll<HTMLElement>(".tech-magnify-item");
       const cleanupFns: Array<() => void> = [];
 
-      if (magnifyItems) {
-        magnifyItems.forEach((el) => {
+      if (techItems) {
+        techItems.forEach((el) => {
           const isHighlight = el.getAttribute("data-is-highlight") === "true";
-          const glowEl = el.querySelector<HTMLElement>(".tech-glow");
-          const labelEl = el.querySelector<HTMLElement>(".tech-label");
+          const glowEl = el.querySelector(".tech-glow");
+          const labelEl = el.querySelector(".tech-label");
 
-          // GSAP quickTo handles high-frequency pointer movement with ZERO tween allocation overhead
-          const xTo = gsap.quickTo(el, "x", { duration: 0.22, ease: "power2.out" });
-          const yTo = gsap.quickTo(el, "y", { duration: 0.22, ease: "power2.out" });
+          // Reset initial transform
+          gsap.set(el, { scale: 1, zIndex: 1, transformOrigin: "center center" });
 
-          let isHovered = false;
-          let centerX = 0;
-          let centerY = 0;
+          if (isTouchDevice) {
+            // Touch device: Simple tap interaction without heavy mouse tracking
+            let tapTimeout: any;
 
-          const onEnter = (e: PointerEvent) => {
-            isHovered = true;
-
-            // Ensure parent mask does not clip during hover expansion
-            const parentMask = el.closest<HTMLElement>(".kinetic-mask");
-            if (parentMask) {
-              parentMask.style.overflow = "visible";
-            }
-
-            // Cache center coordinates ONCE on enter (avoids getBoundingClientRect in pointermove)
-            const rect = el.getBoundingClientRect();
-            centerX = rect.left + rect.width / 2;
-            centerY = rect.top + rect.height / 2;
-
-            // Elevate above surrounding elements
-            el.style.zIndex = "40";
-
-            // Magnify smoothly
-            gsap.to(el, {
-              scale: isMobile ? 1.15 : 1.22,
-              backgroundColor: isHighlight ? "#ecf85e" : "transparent",
-              duration: 0.24,
-              ease: "power3.out",
-              transformOrigin: "center center",
-              overwrite: "auto",
-              force3D: true
-            });
-
-            // Brighten text color
-            if (labelEl) {
-              gsap.to(labelEl, {
-                color: "#000000",
+            const onTouchStart = () => {
+              gsap.to(el, {
+                scale: 1.1,
+                zIndex: 20,
                 duration: 0.2,
                 ease: "power2.out",
                 overwrite: "auto"
               });
-            }
-
-            // Reveal GPU-composited yellow glow aura
-            if (glowEl) {
-              gsap.to(glowEl, {
-                opacity: isHighlight ? 1 : 0.85,
-                duration: 0.2,
-                ease: "power2.out",
-                overwrite: "auto"
-              });
-            }
-
-            // Subtle initial pull towards entry position
-            xTo((e.clientX - centerX) * 0.15);
-            yTo((e.clientY - centerY) * 0.15);
-          };
-
-          const onMove = (e: PointerEvent) => {
-            if (!isHovered) return;
-            // Direct computation without any DOM queries or forced layout reflows
-            xTo((e.clientX - centerX) * 0.15);
-            yTo((e.clientY - centerY) * 0.15);
-          };
-
-          const onLeave = () => {
-            isHovered = false;
-
-            // Smoothly reset magnetic displacement
-            xTo(0);
-            yTo(0);
-
-            // Reset scale and background
-            gsap.to(el, {
-              scale: 1,
-              backgroundColor: isHighlight ? "#e2ee5a" : "transparent",
-              duration: 0.28,
-              ease: "power3.out",
-              overwrite: "auto",
-              force3D: true,
-              onComplete: () => {
-                if (!isHovered) {
-                  el.style.zIndex = "";
-                }
+              if (glowEl) {
+                gsap.to(glowEl, { opacity: 0.8, duration: 0.2 });
               }
+            };
+
+            const onTouchEnd = () => {
+              clearTimeout(tapTimeout);
+              tapTimeout = setTimeout(() => {
+                gsap.to(el, {
+                  scale: 1,
+                  zIndex: 1,
+                  duration: 0.25,
+                  ease: "power2.out",
+                  overwrite: "auto"
+                });
+                if (glowEl) {
+                  gsap.to(glowEl, { opacity: 0, duration: 0.25 });
+                }
+              }, 250);
+            };
+
+            el.addEventListener("touchstart", onTouchStart, { passive: true });
+            el.addEventListener("touchend", onTouchEnd, { passive: true });
+
+            cleanupFns.push(() => {
+              clearTimeout(tapTimeout);
+              el.removeEventListener("touchstart", onTouchStart);
+              el.removeEventListener("touchend", onTouchEnd);
             });
+          } else {
+            // Desktop: Full GSAP magnifying hover interaction
+            const setScale = gsap.quickTo(el, "scale", { duration: 0.35, ease: "power3.out" });
 
-            // Reset text color
-            if (labelEl) {
-              gsap.to(labelEl, {
-                color: isHighlight ? "#0a0a0c" : "#141416",
-                duration: 0.24,
-                ease: "power2.out",
-                overwrite: "auto"
+            const onEnter = () => {
+              el.style.zIndex = "30";
+              setScale(isHighlight ? 1.18 : 1.22);
+
+              if (labelEl && !isHighlight) {
+                gsap.to(labelEl, {
+                  color: "#0a0a0c",
+                  duration: 0.2,
+                  ease: "power2.out",
+                  overwrite: "auto"
+                });
+              }
+
+              if (glowEl) {
+                gsap.to(glowEl, {
+                  opacity: 1,
+                  duration: 0.25,
+                  ease: "power2.out",
+                  overwrite: "auto"
+                });
+              }
+            };
+
+            const onLeave = () => {
+              setScale(1);
+
+              gsap.to(el, {
+                zIndex: 1,
+                delay: 0.25,
+                duration: 0,
+                overwrite: false
               });
-            }
 
-            // Fade out glow aura
-            if (glowEl) {
-              gsap.to(glowEl, {
-                opacity: 0,
-                duration: 0.24,
-                ease: "power2.out",
-                overwrite: "auto"
-              });
-            }
-          };
+              if (labelEl && !isHighlight) {
+                gsap.to(labelEl, {
+                  color: "#141416",
+                  duration: 0.25,
+                  ease: "power2.out",
+                  overwrite: "auto"
+                });
+              }
 
-          // Mobile touch interaction
-          const onTouchStart = (e: TouchEvent) => {
-            if (e.touches[0]) {
-              onEnter({
-                clientX: e.touches[0].clientX,
-                clientY: e.touches[0].clientY
-              } as PointerEvent);
-            }
-          };
-          const onTouchEnd = () => {
-            setTimeout(onLeave, 350);
-          };
+              if (glowEl) {
+                gsap.to(glowEl, {
+                  opacity: 0,
+                  duration: 0.25,
+                  ease: "power2.out",
+                  overwrite: "auto"
+                });
+              }
+            };
 
-          el.addEventListener("pointerenter", onEnter);
-          el.addEventListener("pointermove", onMove);
-          el.addEventListener("pointerleave", onLeave);
-          el.addEventListener("touchstart", onTouchStart, { passive: true });
-          el.addEventListener("touchend", onTouchEnd, { passive: true });
+            el.addEventListener("pointerenter", onEnter);
+            el.addEventListener("pointerleave", onLeave);
 
-          cleanupFns.push(() => {
-            el.removeEventListener("pointerenter", onEnter);
-            el.removeEventListener("pointermove", onMove);
-            el.removeEventListener("pointerleave", onLeave);
-            el.removeEventListener("touchstart", onTouchStart);
-            el.removeEventListener("touchend", onTouchEnd);
-          });
+            cleanupFns.push(() => {
+              el.removeEventListener("pointerenter", onEnter);
+              el.removeEventListener("pointerleave", onLeave);
+            });
+          }
         });
       }
 
-      // 4. Full-Width Yellow Transition Curtain (step_03_0.60s.jpg from reference video)
+      // 4. Full-Width Yellow Transition Curtain
       if (yellowCurtainRef.current) {
         gsap.fromTo(
           yellowCurtainRef.current,
@@ -368,63 +337,63 @@ export function ChapterToolkit() {
     <section
       ref={sectionRef}
       id="toolkit"
-      className="pt-20 sm:pt-28 md:pt-32 pb-0 bg-[#f5f4ef] text-[#141416] select-none overflow-hidden"
+      className="pt-16 sm:pt-24 md:pt-32 pb-0 bg-[#f5f4ef] text-[#141416] select-none overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
-        {/* 1. Small Yellow / Black Rectangular Section Label (Frame 0.00s) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12">
+        {/* 1. Small Yellow / Black Section Badge */}
         <div
           ref={badgeRef}
-          className="inline-block bg-[#e2ee5a] text-[#0a0a0c] px-2.5 py-1 text-xs font-mono font-bold uppercase tracking-wider mb-4 rounded-none shadow-none"
+          className="inline-block bg-[#e2ee5a] text-[#0a0a0c] px-2.5 py-1 text-xs font-mono font-bold uppercase tracking-wider mb-3 sm:mb-4 rounded-none shadow-none"
         >
           CH. 03 — TOOLKIT
         </div>
 
-        {/* 2. Main Heading: "WHAT I BUILD with." on the SAME LINE on desktop */}
-        <div ref={headingRef} className="pb-8 border-b border-black/15 mb-12 sm:mb-16">
-          <h2 className="flex flex-row flex-wrap md:flex-nowrap items-baseline gap-3 sm:gap-4">
-            <span className="text-4xl sm:text-6xl md:text-7xl lg:text-[76px] xl:text-[84px] font-condensed font-extrabold text-[#141416] tracking-tight uppercase leading-none">
+        {/* 2. Main Heading: "WHAT I BUILD with." */}
+        <div ref={headingRef} className="pb-6 sm:pb-8 border-b border-black/15 mb-10 sm:mb-14 md:mb-16">
+          <h2 className="flex flex-row flex-wrap md:flex-nowrap items-baseline gap-2 sm:gap-4">
+            <span className="text-3xl sm:text-5xl md:text-7xl lg:text-[76px] xl:text-[84px] font-condensed font-extrabold text-[#141416] tracking-tight uppercase leading-none">
               WHAT I BUILD
             </span>
-            <span className="text-4xl sm:text-6xl md:text-7xl lg:text-[76px] xl:text-[84px] font-serif italic font-normal text-[#141416] lowercase leading-none">
+            <span className="text-3xl sm:text-5xl md:text-7xl lg:text-[76px] xl:text-[84px] font-serif italic font-normal text-[#141416] lowercase leading-none">
               with.
             </span>
           </h2>
         </div>
 
         {/* 3. Two-Column Editorial Layout with Kinetic Typography Reveals */}
-        <div ref={rowsRef} className="space-y-10 sm:space-y-12 md:space-y-14">
+        <div ref={rowsRef} className="space-y-8 sm:space-y-12 md:space-y-14">
           {techStackGroups.map((group, groupIdx) => (
             <div
               key={groupIdx}
               className="tech-stack-row grid grid-cols-1 md:grid-cols-12 gap-2 sm:gap-6 md:gap-10 items-start"
             >
-              {/* LEFT COLUMN: Narrow column with category label appearing first */}
-              <div className="md:col-span-3 lg:col-span-3 pt-1 sm:pt-1.5">
-                <span className="category-label font-mono text-[10px] sm:text-[11px] text-[#9ca3af] tracking-[0.2em] uppercase font-semibold block">
+              {/* LEFT COLUMN: Category label appearing first */}
+              <div className="md:col-span-3 lg:col-span-3 pt-0.5 sm:pt-1.5">
+                <span className="category-label font-mono text-[10px] sm:text-[11px] text-[#78716c] tracking-[0.2em] uppercase font-bold block">
                   {group.category}
                 </span>
               </div>
 
-              {/* RIGHT COLUMN: Wider column with kinetic emerging technology words */}
-              <div className="md:col-span-9 lg:col-span-9 space-y-1.5 sm:space-y-2 font-condensed font-extrabold text-2xl sm:text-3xl md:text-4xl lg:text-[46px] xl:text-[50px] tracking-tight text-[#141416] leading-[1.12] sm:leading-[1.15]">
+              {/* RIGHT COLUMN: Kinetic emerging technology words with responsive sizing */}
+              <div className="md:col-span-9 lg:col-span-9 space-y-1.5 sm:space-y-2 font-condensed font-extrabold text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-[46px] xl:text-[50px] tracking-tight text-[#141416] leading-[1.15] sm:leading-[1.15]">
                 {group.lines.map((line, lineIdx) => (
                   <div key={lineIdx} className="relative">
-                    {/* Faint sublabel above primary language line (Frame 0.00s above PYTHON) */}
+                    {/* Faint sublabel above primary language line */}
                     {lineIdx === 0 && group.sublabel && (
                       <span className="category-sublabel block font-mono text-[9px] sm:text-[10px] text-[#a8a29e] tracking-[0.2em] uppercase mb-0.5">
                         {group.sublabel}
                       </span>
                     )}
 
-                    <div className="flex flex-wrap items-baseline gap-x-3 sm:gap-x-4">
-                      {/* Highlighted Technology: Wrapped with clipping mask for smooth kinetic reveal and magnifying hover */}
+                    <div className="flex flex-wrap items-baseline gap-x-2 sm:gap-x-4 gap-y-1">
+                      {/* Highlighted Technology: PYTHON */}
                       {line.highlight && (
                         <span className="kinetic-mask inline-block overflow-hidden align-baseline pb-1">
                           <span className="kinetic-word inline-block">
                             <span
                               data-tech={line.highlight}
                               data-is-highlight="true"
-                              className="tech-magnify-item relative inline-block bg-[#e2ee5a] text-[#0a0a0c] px-2.5 sm:px-3.5 py-0.5 font-extrabold leading-tight mr-1 sm:mr-2 rounded-none shadow-none cursor-pointer select-none origin-center"
+                              className="tech-magnify-item relative inline-block bg-[#e2ee5a] text-[#0a0a0c] px-2 sm:px-3.5 py-0.5 font-extrabold leading-tight mr-1 sm:mr-2 rounded-none shadow-none cursor-pointer select-none origin-center"
                             >
                               <span className="tech-glow pointer-events-none absolute -inset-1 rounded bg-[#e2ee5a]/75 blur-md opacity-0 -z-10" />
                               <span className="tech-label relative z-10">{line.highlight}</span>
@@ -433,7 +402,7 @@ export function ChapterToolkit() {
                         </span>
                       )}
 
-                      {/* Individual Technology Words with sequential staggered reveal and magnifying hover */}
+                      {/* Individual Technology Words */}
                       {line.items.map((item, itemIdx) => (
                         <span
                           key={itemIdx}
@@ -442,7 +411,7 @@ export function ChapterToolkit() {
                           <span className="kinetic-word inline-block">
                             <span
                               data-tech={item}
-                              className="tech-magnify-item relative inline-block text-[#141416] px-1.5 py-0.5 cursor-pointer select-none origin-center"
+                              className="tech-magnify-item relative inline-block text-[#141416] px-1 sm:px-1.5 py-0.5 cursor-pointer select-none origin-center"
                             >
                               <span className="tech-glow pointer-events-none absolute -inset-1 rounded bg-[#e2ee5a]/50 blur-md opacity-0 -z-10" />
                               <span className="tech-label relative z-10">{item}</span>
@@ -459,19 +428,12 @@ export function ChapterToolkit() {
         </div>
       </div>
 
-      {/* 4. Full-Width Yellow Transition Curtain (Exact match from reference video step_03_0.60s.jpg) */}
+      {/* 4. Full-Width Yellow Transition Curtain */}
       <div
         ref={yellowCurtainRef}
-        className="w-full h-24 sm:h-36 md:h-44 bg-[#e2ee5a] origin-bottom border-t border-black/10 flex items-center justify-between px-6 sm:px-12 mt-16 sm:mt-24 select-none"
-      >
-        <div className="font-mono text-[10px] sm:text-xs uppercase tracking-widest text-[#0a0a0c]/70 font-bold flex items-center gap-2">
-          <span className="w-2 h-2 bg-[#0a0a0c] inline-block" />
-          <span>CHAPTER 04 // CERTIFICATIONS</span>
-        </div>
-        <div className="font-serif italic text-[#0a0a0c]/50 text-xs sm:text-sm hidden sm:block">
-          verified industry accreditations &amp; credentials
-        </div>
-      </div>
+        className="w-full h-12 sm:h-20 bg-[#e2ee5a] mt-16 sm:mt-24 pointer-events-none"
+        aria-hidden="true"
+      />
     </section>
   );
 }

@@ -631,6 +631,21 @@ export function ChapterHireMe() {
                     <circle cx={btnCenterX + 82} cy={btnCenterY - 16} r="3" fill="#e2ee5a" />
                   </g>
                 </svg>
+
+                {/* Mobile Direct Tap Alternative */}
+                <div className="md:hidden flex flex-col items-center gap-2 mt-4 px-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsActivated(true)}
+                    className="w-full max-w-sm py-3.5 px-6 bg-[#0a0a0c] border border-[#e2ee5a]/40 text-[#e2ee5a] hover:bg-[#e2ee5a] hover:text-[#0a0a0c] font-mono text-xs font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(226,238,90,0.15)] flex items-center justify-center gap-2 transition-all cursor-pointer min-h-[44px] active:scale-95"
+                  >
+                    <span>TAP TO CONNECT / HIRE ME</span>
+                    <ArrowUpRight size={14} />
+                  </button>
+                  <span className="text-[10px] font-mono text-ivory-400/60 uppercase tracking-wider">
+                    TAP BUTTON OR DRAG HAND TO CONNECT
+                  </span>
+                </div>
               </div>
 
               {/* FOOTER SECTION: "PREFER IT PLAIN?" */}
@@ -681,16 +696,16 @@ export function ChapterHireMe() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full max-w-4xl mx-auto py-10 sm:py-16 md:py-20"
+              className="relative w-full max-w-4xl mx-auto py-8 sm:py-16 md:py-20 px-2 sm:px-0"
             >
               {/* Top Bar with Chapter Badge & Dismiss Pill */}
-              <div className="flex items-center justify-between pb-6 border-b border-white/10 mb-10 sm:mb-14">
+              <div className="flex items-center justify-between pb-4 sm:pb-6 border-b border-white/10 mb-8 sm:mb-14">
                 <div className="space-y-1">
                   <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#e2ee5a] font-bold">
                     <span className="w-2 h-2 bg-[#e2ee5a] inline-block shadow-[0_0_8px_#e2ee5a]" />
                     <span>CH. 06 — THE CLOSE</span>
                   </div>
-                  <div className="text-xs font-mono text-ivory-400 uppercase tracking-widest block">
+                  <div className="text-[10px] sm:text-xs font-mono text-ivory-400 uppercase tracking-widest block">
                     PROJECT INQUIRY &amp; DIRECT COLLABORATION
                   </div>
                 </div>
@@ -699,41 +714,41 @@ export function ChapterHireMe() {
                 <button
                   type="button"
                   onClick={() => setIsActivated(false)}
-                  className="px-4 py-2 rounded-full bg-white/10 hover:bg-[#e2ee5a] hover:text-[#0a0a0c] text-xs font-mono font-bold tracking-wider uppercase flex items-center gap-2 transition-all cursor-pointer text-white"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white/10 hover:bg-[#e2ee5a] hover:text-[#0a0a0c] text-[11px] sm:text-xs font-mono font-bold tracking-wider uppercase flex items-center gap-1.5 sm:gap-2 transition-all cursor-pointer text-white min-h-[36px]"
                   aria-label="Close contact overlay"
                 >
-                  <RotateCcw size={13} />
+                  <RotateCcw size={12} />
                   <span>CLOSE / RESET</span>
                 </button>
               </div>
 
               {/* Master Headline */}
-              <div className="mb-10 sm:mb-14">
-                <h2 className="text-4xl sm:text-6xl md:text-7xl lg:text-[76px] font-serif italic font-normal text-white leading-[1.05] tracking-tight">
+              <div className="mb-8 sm:mb-14">
+                <h2 className="text-3xl sm:text-6xl md:text-7xl lg:text-[76px] font-serif italic font-normal text-white leading-[1.08] sm:leading-[1.05] tracking-tight">
                   Let's talk about what <br />
                   <span className="text-[#e2ee5a]">I can build for you.</span>
                 </h2>
 
                 {/* Name, Professional Role & Editorial Summary */}
-                <div className="mt-8 sm:mt-10 max-w-2xl space-y-3">
+                <div className="mt-6 sm:mt-10 max-w-2xl space-y-2.5 sm:space-y-3">
                   <div className="font-mono text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-[#e2ee5a]">
                     AMBATI SAI DEEPAK // AI ENGINEER &amp; FULL-STACK DEVELOPER
                   </div>
-                  <p className="text-base sm:text-lg text-ivory-300 font-sans leading-relaxed">
+                  <p className="text-sm sm:text-lg text-ivory-300 font-sans leading-relaxed">
                     I turn ideas into working products — LangGraph multi-agent systems, RAG engines, FastAPI backends, Dockerized deployments, and LLM-powered features — built with careful engineering and a feel for motion.
                   </p>
                 </div>
               </div>
 
               {/* Primary Visual Focus: Prominent START A PROJECT CTA + DIRECT MESSAGE */}
-              <div className="mb-16 sm:mb-24 pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6 flex-wrap">
+              <div className="mb-12 sm:mb-24 pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-6 flex-wrap">
                 <a
                   href={`mailto:${bio.email || profile.email}?subject=${encodeURIComponent("Project Collaboration – Sai Deepak")}`}
-                  className="group relative inline-flex items-center justify-center gap-3.5 px-8 sm:px-12 py-4 sm:py-5 bg-[#e2ee5a] hover:bg-white text-[#0a0a0c] font-condensed font-extrabold text-lg sm:text-xl md:text-2xl uppercase tracking-wider transition-all duration-300 shadow-[0_0_35px_rgba(226,238,90,0.35)] hover:shadow-[0_0_55px_rgba(226,238,90,0.65)] active:scale-[0.98] select-none"
+                  className="group relative inline-flex items-center justify-center gap-3 px-6 sm:px-12 py-4 sm:py-5 bg-[#e2ee5a] hover:bg-white text-[#0a0a0c] font-condensed font-extrabold text-base sm:text-xl md:text-2xl uppercase tracking-wider transition-all duration-300 shadow-[0_0_35px_rgba(226,238,90,0.35)] hover:shadow-[0_0_55px_rgba(226,238,90,0.65)] active:scale-[0.98] select-none min-h-[48px] text-center"
                 >
                   <span>START A PROJECT</span>
                   <ArrowUpRight
-                    size={22}
+                    size={20}
                     className="text-[#0a0a0c] group-hover:translate-x-1.5 group-hover:-translate-y-1.5 transition-transform duration-200"
                   />
                 </a>
@@ -741,9 +756,9 @@ export function ChapterHireMe() {
                 <button
                   type="button"
                   onClick={() => setContactModalOpen(true)}
-                  className="inline-flex items-center justify-center gap-2.5 px-6 sm:px-8 py-4 sm:py-5 bg-white/5 hover:bg-white/10 border border-white/20 hover:border-[#e2ee5a] text-white font-condensed font-bold text-base sm:text-lg uppercase tracking-wider transition-all cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2.5 px-5 sm:px-8 py-3.5 sm:py-5 bg-white/5 hover:bg-white/10 border border-white/20 hover:border-[#e2ee5a] text-white font-condensed font-bold text-sm sm:text-lg uppercase tracking-wider transition-all cursor-pointer min-h-[48px]"
                 >
-                  <Mail size={18} className="text-[#e2ee5a]" />
+                  <Mail size={16} className="text-[#e2ee5a]" />
                   <span>SEND DIRECT MESSAGE</span>
                 </button>
 

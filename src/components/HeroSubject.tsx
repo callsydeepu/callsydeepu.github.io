@@ -20,7 +20,7 @@ export function HeroSubject() {
   const [isLightsOn, setIsLightsOn] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Coordinates for smooth cursor-following spotlight
+  // Coordinates for smooth cursor/touch-following spotlight
   const mousePos = useRef({ x: 0, y: 0 });
   const currentPos = useRef({ x: 0, y: 0 });
   const rafId = useRef<number | null>(null);
@@ -48,7 +48,6 @@ export function HeroSubject() {
   const updateSpotlight = useCallback(() => {
     if (!heroRef.current) return;
 
-    // Smooth lerp (0.14) creates natural delayed motion following cursor
     currentPos.current.x += (mousePos.current.x - currentPos.current.x) * 0.14;
     currentPos.current.y += (mousePos.current.y - currentPos.current.y) * 0.14;
 
@@ -71,6 +70,15 @@ export function HeroSubject() {
     mousePos.current = {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top
+    };
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLElement>) => {
+    if (!heroRef.current || !e.touches[0]) return;
+    const rect = heroRef.current.getBoundingClientRect();
+    mousePos.current = {
+      x: e.touches[0].clientX - rect.left,
+      y: e.touches[0].clientY - rect.top
     };
   };
 
@@ -103,7 +111,7 @@ export function HeroSubject() {
         );
       }
 
-      // 2. Yellow Panel reveal
+      // 2. Yellow Panel reveal (Desktop)
       if (yellowPanelRef.current) {
         tl.fromTo(
           yellowPanelRef.current,
@@ -113,7 +121,7 @@ export function HeroSubject() {
         );
       }
 
-      // 3. Portrait smooth upward reveal
+      // 3. Portrait smooth upward reveal (Desktop)
       if (portraitRef.current) {
         tl.fromTo(
           portraitRef.current,
@@ -137,7 +145,6 @@ export function HeroSubject() {
       ).matches;
 
       if (!prefersReducedMotion && heroRef.current) {
-        // Initials glide upward with deep background parallax
         if (initialsRef.current) {
           gsap.to(initialsRef.current, {
             yPercent: -22,
@@ -151,7 +158,6 @@ export function HeroSubject() {
           });
         }
 
-        // Yellow panel glides at mid-depth speed
         if (yellowPanelRef.current) {
           gsap.to(yellowPanelRef.current, {
             yPercent: -15,
@@ -165,7 +171,6 @@ export function HeroSubject() {
           });
         }
 
-        // Foreground portrait glides smoothly with subtle depth
         if (portraitRef.current) {
           gsap.to(portraitRef.current, {
             yPercent: -8,
@@ -179,7 +184,6 @@ export function HeroSubject() {
           });
         }
 
-        // Text content fades gently as user scrolls toward the next chapter
         gsap.to(".hero-stagger", {
           opacity: 0.25,
           y: -20,
@@ -198,8 +202,8 @@ export function HeroSubject() {
     // Initial spotlight centered on the portrait / hero right side
     if (heroRef.current) {
       const rect = heroRef.current.getBoundingClientRect();
-      const initialX = rect.width * 0.72;
-      const initialY = rect.height * 0.48;
+      const initialX = rect.width > 768 ? rect.width * 0.72 : rect.width * 0.5;
+      const initialY = rect.height > 768 ? rect.height * 0.48 : rect.height * 0.38;
       currentPos.current = { x: initialX, y: initialY };
       mousePos.current = { x: initialX, y: initialY };
       heroRef.current.style.setProperty("--spot-x", `${initialX}px`);
@@ -216,25 +220,26 @@ export function HeroSubject() {
       onPointerMove={handlePointerMove}
       onPointerEnter={handlePointerEnter}
       onPointerLeave={handlePointerLeave}
-      className="relative min-h-screen min-h-[100vh] min-h-[100svh] hero-viewport-height w-full pt-24 sm:pt-28 lg:pt-32 pb-6 sm:pb-8 lg:pb-10 flex flex-col justify-between overflow-hidden bg-[#111111] select-none"
+      onTouchMove={handleTouchMove}
+      className="relative min-h-screen min-h-[100vh] min-h-[100svh] hero-viewport-height w-full pt-20 sm:pt-28 lg:pt-32 pb-8 sm:pb-8 lg:pb-10 flex flex-col justify-between overflow-hidden bg-[#111111] select-none"
       style={{ touchAction: "pan-y" }}
     >
       {/* 1. LAYER 1: ENORMOUS OUTLINED INITIALS (BEHIND PORTRAIT & YELLOW PANEL) */}
       <div
         ref={initialsRef}
-        className="absolute right-[-2%] sm:right-[1%] md:right-[3%] lg:right-[4%] top-[8%] bottom-[2%] flex items-center justify-end pointer-events-none select-none z-10 overflow-visible opacity-35"
+        className="absolute right-[-2%] sm:right-[1%] md:right-[3%] lg:right-[4%] top-[8%] bottom-[2%] flex items-center justify-end pointer-events-none select-none z-10 overflow-visible opacity-30 sm:opacity-35"
       >
         <span
-          className="font-condensed font-extrabold text-[54vw] sm:text-[42vw] md:text-[34vw] lg:text-[29vw] xl:text-[27vw] leading-none text-transparent tracking-tighter select-none drop-shadow-[0_0_50px_rgba(255,255,255,0.04)]"
+          className="font-condensed font-extrabold text-[62vw] sm:text-[42vw] md:text-[34vw] lg:text-[29vw] xl:text-[27vw] leading-none text-transparent tracking-tighter select-none drop-shadow-[0_0_50px_rgba(255,255,255,0.04)]"
           style={{
-            WebkitTextStroke: "2px rgba(255, 255, 255, 0.20)"
+            WebkitTextStroke: "1.5px rgba(255, 255, 255, 0.18)"
           }}
         >
           {profile.heroInitials}
         </span>
       </div>
 
-      {/* 2. LAYER 2: BRIGHT YELLOW BACKGROUND RECTANGULAR PANEL (DESKTOP ABSOLUTE BEHIND PORTRAIT) */}
+      {/* 2. LAYER 2: BRIGHT YELLOW BACKGROUND RECTANGULAR PANEL (DESKTOP ONLY) */}
       <div
         ref={yellowPanelRef}
         className="hidden lg:block absolute right-12 sm:right-16 lg:right-20 xl:right-28 2xl:right-36 top-[15vh] xl:top-[16vh] w-[340px] xl:w-[420px] 2xl:w-[480px] h-[52vh] xl:h-[55vh] max-h-[560px] 2xl:max-h-[620px] bg-[#e2ee5a] z-15 pointer-events-none rounded-none transition-all duration-700"
@@ -246,7 +251,7 @@ export function HeroSubject() {
         }}
       />
 
-      {/* 3. LAYER 3: LARGE NATURALLY ISOLATED CUTOUT PORTRAIT (DESKTOP ABSOLUTE EXTENDING BEYOND BOTTOM) */}
+      {/* 3. LAYER 3: LARGE NATURALLY ISOLATED CUTOUT PORTRAIT (DESKTOP ONLY) */}
       <div
         ref={portraitRef}
         className="hidden lg:flex absolute right-[-20px] lg:right-0 xl:right-[2%] 2xl:right-[5%] bottom-[-45px] xl:bottom-[-55px] 2xl:bottom-[-65px] z-20 pointer-events-none items-end justify-center"
@@ -269,53 +274,78 @@ export function HeroSubject() {
       </div>
 
       {/* Main Grid Content */}
-      <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 w-full relative z-25 my-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 w-full relative z-25 my-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
-          {/* LEFT COLUMN: Editorial Subject Details (7 cols) */}
+          {/* LEFT COLUMN: Editorial Subject Details */}
           <div className="lg:col-span-7 flex flex-col justify-center">
             {/* FIG. 01 — THE SUBJECT badge */}
-            <div className="hero-stagger flex flex-wrap items-center gap-3 mb-4">
-              <div className="flex items-center gap-2 text-[10px] font-mono tracking-widest uppercase text-ivory-300">
-                <span className="w-2.5 h-2.5 bg-[#e24a4a] inline-block" />
+            <div className="hero-stagger flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+              <div className="flex items-center gap-2 text-[9px] sm:text-[10px] font-mono tracking-widest uppercase text-ivory-300">
+                <span className="w-2 sm:w-2.5 h-2 sm:h-2.5 bg-[#e24a4a] inline-block" />
                 <span>FIG. 01 — THE SUBJECT</span>
               </div>
               <span className="text-white/20 font-mono text-xs">//</span>
-              <div className="px-2 py-0.5 bg-[#e2ee5a] text-[#0a0a0c] font-mono text-[10px] font-bold uppercase tracking-wider">
+              <div className="px-2 py-0.5 bg-[#e2ee5a] text-[#0a0a0c] font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-wider">
                 {profile.primaryLanguage}
               </div>
             </div>
 
             {/* Interactive Spotlight Prompt Indicator */}
-            <div className="hero-stagger flex items-center gap-2.5 my-2 text-[11px] font-mono tracking-widest text-[#e2ee5a] uppercase">
-              <span className="w-2 h-2 rounded-full bg-[#e2ee5a] shadow-[0_0_8px_#e2ee5a] animate-ping" />
+            <div className="hero-stagger flex items-center gap-2 my-1.5 sm:my-2 text-[10px] sm:text-[11px] font-mono tracking-widest text-[#e2ee5a] uppercase">
+              <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-[#e2ee5a] shadow-[0_0_8px_#e2ee5a] animate-ping" />
               <span>
                 {isLightsOn
                   ? "● LIGHTS ACTIVE // FULL SYSTEM ILLUMINATED"
                   : isHovered
                   ? "● SPOTLIGHT ACTIVE // MOVE CURSOR TO INSPECT"
-                  : "● LIGHTS OFF // MOVE CURSOR OR TOGGLE LIGHTS"}
+                  : "● AMBIENT MODE // TOGGLE LIGHTS OR TOUCH"}
               </span>
             </div>
 
-            {/* Name Heading in Oversized Bold Condensed Typography */}
-            <div className="hero-stagger mt-2 mb-3">
-              <div className="text-xs sm:text-sm font-mono tracking-[0.25em] uppercase text-ivory-400 mb-1">
+            {/* Name Heading in Bold Condensed Typography */}
+            <div className="hero-stagger mt-1 sm:mt-2 mb-2 sm:mb-3">
+              <div className="text-[11px] sm:text-sm font-mono tracking-[0.25em] uppercase text-ivory-400 mb-1">
                 {profile.kicker}
               </div>
-              <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[100px] xl:text-[108px] font-condensed font-extrabold tracking-tight text-white leading-[0.88] uppercase">
+              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-[100px] xl:text-[108px] font-condensed font-extrabold tracking-tight text-white leading-[0.92] uppercase">
                 {profile.displayName}
               </h1>
             </div>
 
             {/* Professional Positioning */}
             <div className="hero-stagger">
-              <div className="text-lg sm:text-2xl md:text-3xl font-serif italic text-[#e2ee5a] leading-tight mb-4">
+              <div className="text-base sm:text-xl md:text-2xl lg:text-3xl font-serif italic text-[#e2ee5a] leading-tight mb-3 sm:mb-4">
                 {profile.positioning}
               </div>
             </div>
 
+            {/* MOBILE DEDICATED PORTRAIT COMPOSITION (VISIBLE ON MOBILE/TABLET, HIDDEN ON DESKTOP) */}
+            <div className="block lg:hidden my-4 sm:my-6 relative w-full max-w-[280px] xs:max-w-[310px] sm:max-w-[360px] mx-auto">
+              {/* Yellow background panel with accent glow */}
+              <div
+                className="absolute inset-x-3 top-4 bottom-0 bg-[#e2ee5a] z-10 pointer-events-none transition-all duration-500 shadow-[0_0_35px_rgba(226,238,90,0.3)]"
+              />
+              {/* Portrait Cutout Picture */}
+              <picture className="relative z-20 flex justify-center items-end">
+                <source srcSet={profile.portraitCutout} type="image/webp" />
+                <img
+                  src={profile.portraitCutoutPng || profile.portraitJpg}
+                  alt="Sai Deepak Ambati"
+                  className="w-full h-auto max-h-[340px] sm:max-h-[420px] aspect-[1696/1580] object-contain object-bottom select-none pointer-events-none drop-shadow-[0_15px_30px_rgba(0,0,0,0.9)]"
+                  style={{
+                    filter: isLightsOn ? "contrast(108%) brightness(100%)" : "contrast(105%) brightness(92%)"
+                  }}
+                  loading="eager"
+                />
+              </picture>
+              {/* Corner verified badge on mobile */}
+              <div className="absolute bottom-2 left-2 z-25 px-2 py-0.5 bg-[#0a0a0c] text-[#e2ee5a] font-mono text-[9px] font-bold uppercase tracking-wider border border-[#e2ee5a]/40">
+                SD // VERIFIED
+              </div>
+            </div>
+
             {/* Thin Horizontal Divider Line */}
-            <div className="hero-stagger w-full max-w-xl h-[1px] bg-white/15 my-3" />
+            <div className="hero-stagger w-full max-w-xl h-[1px] bg-white/15 my-2.5 sm:my-3" />
 
             {/* Short Professional Introduction */}
             <div className="hero-stagger max-w-xl">
@@ -325,19 +355,19 @@ export function HeroSubject() {
             </div>
 
             {/* Subtle Editorial Metadata Row */}
-            <div className="hero-stagger flex flex-wrap items-center gap-x-5 gap-y-2 mt-5 text-[10px] sm:text-[11px] font-mono text-ivory-400 uppercase tracking-wider">
+            <div className="hero-stagger flex flex-wrap items-center gap-x-4 sm:gap-x-5 gap-y-1.5 mt-4 sm:mt-5 text-[10px] sm:text-[11px] font-mono text-ivory-400 uppercase tracking-wider">
               <span>LOC: {profile.location.split(",")[0]}</span>
               <span className="text-white/20">•</span>
-              <span>ROLE: AI & SYSTEMS UNDERGRADUATE</span>
+              <span>ROLE: AI & SYSTEMS</span>
               <span className="text-white/20">•</span>
-              <span className="text-[#e2ee5a] font-bold">PORTFOLIO</span>
+              <span className="text-[#e2ee5a] font-bold">ACTIVE 2026</span>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="hero-stagger flex flex-wrap items-center gap-4 mt-8">
+            {/* CTA Buttons (Touch-Optimized for Mobile) */}
+            <div className="hero-stagger flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mt-6 sm:mt-8">
               <a
                 href="#case-files"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-none bg-[#e2ee5a] text-[#0a0a0c] font-mono text-xs font-bold tracking-wider uppercase hover:bg-white hover:text-black transition-all shadow-[0_0_25px_rgba(226,238,90,0.3)] active:scale-95"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 rounded-none bg-[#e2ee5a] text-[#0a0a0c] font-mono text-xs font-bold tracking-wider uppercase hover:bg-white hover:text-black transition-all shadow-[0_0_25px_rgba(226,238,90,0.3)] active:scale-95 text-center min-h-[44px]"
               >
                 <span>EXPLORE CASE FILES</span>
                 <ArrowDown size={14} />
@@ -345,7 +375,7 @@ export function HeroSubject() {
 
               <a
                 href="#hire-me"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-none bg-black/80 text-white border border-white/20 font-mono text-xs font-bold tracking-wider uppercase hover:border-[#e2ee5a] hover:text-[#e2ee5a] transition-all active:scale-95"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 rounded-none bg-black/80 text-white border border-white/20 font-mono text-xs font-bold tracking-wider uppercase hover:border-[#e2ee5a] hover:text-[#e2ee5a] transition-all active:scale-95 text-center min-h-[44px]"
               >
                 <span>PULL ME INTO YOUR TEAM</span>
                 <ArrowUpRight size={14} />
@@ -353,40 +383,19 @@ export function HeroSubject() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN (MOBILE / TABLET ONLY): Stacks naturally below text on small screens */}
-          <div className="block lg:hidden relative w-full max-w-[340px] sm:max-w-[420px] mx-auto mt-8 flex justify-center items-end">
-            {/* Mobile Yellow Panel */}
-            <div
-              className="absolute inset-x-4 top-8 bottom-0 bg-[#e2ee5a] z-15 pointer-events-none"
-              style={{
-                boxShadow: "0 0 45px rgba(226, 238, 90, 0.25)"
-              }}
-            />
-            {/* Mobile Portrait Cutout */}
-            <picture className="relative z-20">
-              <source srcSet={profile.portraitCutout} type="image/webp" />
-              <img
-                src={profile.portraitCutoutPng || profile.portraitJpg}
-                alt="Sai Deepak Ambati"
-                className="w-full h-auto max-h-[460px] sm:max-h-[520px] aspect-[1696/1580] object-contain object-bottom select-none pointer-events-none drop-shadow-[0_20px_40px_rgba(0,0,0,0.9)]"
-                loading="eager"
-              />
-            </picture>
-          </div>
-
           {/* Desktop Right Spacer to preserve 7/5 grid rhythm */}
           <div className="hidden lg:block lg:col-span-5 pointer-events-none" aria-hidden="true" />
         </div>
       </div>
 
-      {/* 3. LIGHTS OFF / ON INTERACTIVE SPOTLIGHT MASK */}
+      {/* 3. LIGHTS OFF / ON INTERACTIVE SPOTLIGHT MASK (RESPONSIVE FOR TOUCH AND DESKTOP) */}
       <div
         className="absolute inset-0 pointer-events-none z-30 transition-opacity duration-700"
         style={{
           opacity: isLightsOn ? 0 : 1,
           background: isHovered
             ? `radial-gradient(circle 280px at var(--spot-x, 70%) var(--spot-y, 45%), rgba(255,255,255,0.01) 0%, rgba(226,238,90,0.08) 35%, rgba(17,17,17,0.72) 65%, rgba(17,17,17,0.92) 100%)`
-            : `radial-gradient(circle 220px at var(--spot-x, 70%) var(--spot-y, 45%), rgba(226,238,90,0.08) 0%, rgba(17,17,17,0.78) 50%, rgba(17,17,17,0.94) 100%)`
+            : `radial-gradient(circle 380px at var(--spot-x, 50%) var(--spot-y, 40%), rgba(226,238,90,0.09) 0%, rgba(17,17,17,0.48) 55%, rgba(17,17,17,0.88) 100%)`
         }}
       />
 
@@ -407,15 +416,15 @@ export function HeroSubject() {
       )}
 
       {/* TOP-RIGHT LIGHTS ON / OFF TOGGLE PILL */}
-      <div className="absolute top-20 sm:top-24 right-5 sm:right-8 lg:right-12 z-40">
+      <div className="absolute top-20 sm:top-24 right-4 sm:right-8 lg:right-12 z-40">
         <button
           type="button"
           onClick={toggleLights}
           aria-label={isLightsOn ? "Switch to Lights Off" : "Switch to Lights On"}
-          className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-xl ${
+          className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-xl ${
             isLightsOn
               ? "bg-[#e2ee5a] text-[#0a0a0c] shadow-[0_0_25px_rgba(226,238,90,0.5)]"
-              : "bg-black/80 text-[#e2ee5a] border border-[#e2ee5a]/50 hover:bg-[#e2ee5a]/10"
+              : "bg-black/85 text-[#e2ee5a] border border-[#e2ee5a]/50 hover:bg-[#e2ee5a]/10"
           }`}
         >
           {isLightsOn ? <Sun size={13} /> : <Moon size={13} />}
@@ -424,13 +433,13 @@ export function HeroSubject() {
       </div>
 
       {/* Bottom Chapter Marker */}
-      <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 w-full pt-4 flex items-center justify-between text-[10px] font-mono text-ivory-400/60 z-25">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 w-full pt-4 flex items-center justify-between text-[10px] font-mono text-ivory-400/60 z-25">
         <span>01 // SUBJECT IDENTIFICATION</span>
         <a
           href="#about-subject"
-          className="hover:text-[#e2ee5a] transition-colors flex items-center gap-1"
+          className="hover:text-[#e2ee5a] transition-colors flex items-center gap-1 py-1"
         >
-          <span>PROCEED TO CHAPTER 01</span>
+          <span>PROCEED TO CH. 01</span>
           <ArrowDown size={11} />
         </a>
       </div>

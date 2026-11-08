@@ -65,96 +65,90 @@ function TorchlightPreview({ project }: { project: FeaturedProject }) {
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="relative w-full h-[270px] sm:h-[310px] md:h-[330px] rounded-2xl bg-gradient-to-b from-[#131318] via-[#0c0c10] to-[#070709] border border-white/15 p-4 sm:p-5 overflow-hidden shadow-2xl flex flex-col justify-between group cursor-crosshair"
+        className="relative w-full h-[220px] xs:h-[250px] sm:h-[310px] md:h-[330px] rounded-2xl bg-gradient-to-b from-[#131318] via-[#0c0c10] to-[#070709] border border-white/15 p-3.5 sm:p-5 overflow-hidden shadow-2xl flex flex-col justify-between group cursor-crosshair"
+        style={{ touchAction: "pan-y" }}
       >
         {/* Top Window Bar */}
-        <div className="flex items-center justify-between pb-2.5 border-b border-white/10 text-[10px] font-mono text-ivory-400 z-10">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#e24a4a]" />
-            <span className="w-2.5 h-2.5 rounded-full bg-[#e2ee5a]" />
-            <span className="w-2.5 h-2.5 rounded-full bg-[#38bdf8]" />
-            <span className="ml-2 font-bold text-white uppercase tracking-widest">
+        <div className="flex items-center justify-between pb-2 border-b border-white/10 text-[9px] sm:text-[10px] font-mono text-ivory-400 z-10">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-[#e24a4a]" />
+            <span className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-[#e2ee5a]" />
+            <span className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-[#38bdf8]" />
+            <span className="ml-1 sm:ml-2 font-bold text-white uppercase tracking-wider truncate max-w-[150px] sm:max-w-none">
               DOSSIER // {project.number} — {project.category}
             </span>
           </div>
-          <span className="text-[#e2ee5a] font-bold tracking-wider">DRAG TORCH TO INSPECT</span>
+          <span className="text-[#e2ee5a] font-bold tracking-wider hidden xs:inline">INSPECT DOSSIER</span>
         </div>
 
-        {/* 3D Stacked Translucent Document Dossier (Screenshot 2 Exact Visual!) */}
-        <div className="relative my-auto w-full h-[180px] sm:h-[200px] flex items-center justify-center z-10">
+        {/* 3D Stacked Translucent Document Dossier */}
+        <div className="relative my-auto w-full h-[150px] xs:h-[170px] sm:h-[200px] flex items-center justify-center z-10">
           <div className="relative w-full max-w-[420px] h-full flex items-center justify-center">
             {/* Sheet 3: Deepest Background Layer */}
-            <div className="absolute inset-x-6 top-3 bottom-1 rounded-xl bg-white/[0.02] border border-white/5 transform -rotate-6 scale-90 translate-x-4 -translate-y-2 pointer-events-none opacity-40">
-              <div className="p-3 space-y-2">
-                <div className="h-1.5 w-20 bg-white/20 rounded-full" />
-                <div className="h-1.5 w-44 bg-white/10 rounded-full" />
-                <div className="h-1.5 w-32 bg-white/10 rounded-full" />
+            <div className="absolute inset-x-4 sm:inset-x-6 top-2 sm:top-3 bottom-1 rounded-xl bg-white/[0.02] border border-white/5 transform -rotate-6 scale-90 translate-x-2 sm:translate-x-4 -translate-y-2 pointer-events-none opacity-40">
+              <div className="p-2 sm:p-3 space-y-1.5 sm:space-y-2">
+                <div className="h-1 sm:h-1.5 w-16 sm:w-20 bg-white/20 rounded-full" />
+                <div className="h-1 sm:h-1.5 w-32 sm:w-44 bg-white/10 rounded-full" />
               </div>
             </div>
 
             {/* Sheet 2: Middle Translucent Layer with Red Alert Stroke */}
-            <div className="absolute inset-x-3 top-2 bottom-1.5 rounded-xl bg-white/[0.04] border border-white/10 shadow-lg transform -rotate-3 scale-95 translate-x-2 -translate-y-1 pointer-events-none opacity-70">
-              <div className="p-3.5 space-y-2">
+            <div className="absolute inset-x-2 sm:inset-x-3 top-1.5 sm:top-2 bottom-1.5 rounded-xl bg-white/[0.04] border border-white/10 shadow-lg transform -rotate-3 scale-95 translate-x-1 sm:translate-x-2 -translate-y-1 pointer-events-none opacity-70">
+              <div className="p-2.5 sm:p-3.5 space-y-1.5 sm:space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="h-1.5 w-24 bg-white/30 rounded-full" />
-                  <div className="h-1.5 w-10 bg-white/20 rounded-full" />
+                  <div className="h-1 sm:h-1.5 w-20 sm:w-24 bg-white/30 rounded-full" />
+                  <div className="h-1 sm:h-1.5 w-8 sm:w-10 bg-white/20 rounded-full" />
                 </div>
-                <div className="h-1.5 w-full bg-white/15 rounded-full" />
-                {/* Secondary highlight line */}
-                <div className="h-2.5 w-36 bg-[#e24a4a]/30 rounded px-1 flex items-center">
+                <div className="h-1 sm:h-1.5 w-full bg-white/15 rounded-full" />
+                <div className="h-2 sm:h-2.5 w-28 sm:w-36 bg-[#e24a4a]/30 rounded px-1 flex items-center">
                   <div className="h-1 w-full bg-[#ff6b6b] rounded-sm" />
                 </div>
-                <div className="h-1.5 w-4/5 bg-white/15 rounded-full" />
               </div>
             </div>
 
-            {/* Sheet 1: Primary Document with Yellow & Red Highlights (Exact Match to Screenshot 2!) */}
-            <div className="relative w-full h-full rounded-xl bg-gradient-to-br from-[#16161f]/95 via-[#0e0e14]/98 to-[#09090c] border border-white/20 p-4 shadow-2xl flex flex-col justify-between backdrop-blur-md">
+            {/* Sheet 1: Primary Document */}
+            <div className="relative w-full h-full rounded-xl bg-gradient-to-br from-[#16161f]/95 via-[#0e0e14]/98 to-[#09090c] border border-white/20 p-3 sm:p-4 shadow-2xl flex flex-col justify-between backdrop-blur-md">
               {/* Document Header */}
-              <div className="flex items-center justify-between pb-1.5 border-b border-white/15 text-[10px] font-mono">
-                <span className="text-[#e2ee5a] font-bold tracking-wider">
-                  SYSTEM RECORD // {project.category}
+              <div className="flex items-center justify-between pb-1 border-b border-white/15 text-[9px] sm:text-[10px] font-mono">
+                <span className="text-[#e2ee5a] font-bold tracking-wider truncate">
+                  RECORD // {project.category}
                 </span>
-                <span className="text-white/40 text-[9px]">AUDIT: VERIFIED</span>
+                <span className="text-white/40 text-[8px] sm:text-[9px] shrink-0 ml-1">AUDIT: OK</span>
               </div>
 
               {/* Text Lines with Yellow & Red Highlights */}
-              <div className="space-y-2 my-auto">
-                {/* Prominent Bright Yellow Highlight Bar (Matches Screenshot 2) */}
-                <div className="relative inline-block px-2.5 py-0.5 bg-[#e2ee5a] text-[#0a0a0c] font-mono text-[10px] sm:text-[11px] font-extrabold uppercase rounded-none tracking-wider">
+              <div className="space-y-1.5 sm:space-y-2 my-auto">
+                <div className="relative inline-block px-2 sm:px-2.5 py-0.5 bg-[#e2ee5a] text-[#0a0a0c] font-mono text-[9px] xs:text-[10px] sm:text-[11px] font-extrabold uppercase rounded-none tracking-wider truncate max-w-full">
                   {project.id === "agentspace"
-                    ? "AUTONOMOUS MULTI-AGENT PLATFORM // ACTIVE"
+                    ? "AUTONOMOUS MULTI-AGENT PLATFORM"
                     : project.id === "researchmind"
-                    ? "4-AGENT RESEARCH PIPELINE // TAVILY + LCEL"
+                    ? "4-AGENT RESEARCH PIPELINE"
                     : project.id === "system-anomaly"
-                    ? "ISOLATION FOREST SOC // 8 STATISTICAL FEATURES"
+                    ? "ISOLATION FOREST SENTINEL"
                     : project.id === "mockmate"
-                    ? "WHISPER + MEDIAPIPE AUDIO-VISUAL // 60 FPS"
-                    : `CRITICAL TELEMETRY // ${project.title}`}
+                    ? "WHISPER + MEDIAPIPE AUDIO-VISUAL"
+                    : `TELEMETRY // ${project.title}`}
                 </div>
 
-                {/* Monospace Code / Audit Metadata Lines */}
-                <div className="space-y-1.5 font-mono text-[9px] sm:text-[10px]">
-                  <div className="flex items-center gap-2 text-ivory-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#e2ee5a]" />
-                    <span className="text-white/50">0x7F2A:</span>
+                <div className="space-y-1 font-mono text-[8px] sm:text-[10px]">
+                  <div className="flex items-center gap-1.5 text-ivory-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#e2ee5a] shrink-0" />
+                    <span className="text-white/50">0x7F:</span>
                     <span className="text-white font-medium truncate">
-                      {project.stack.slice(0, 4).join(" • ")}
+                      {project.stack.slice(0, 3).join(" • ")}
                     </span>
                   </div>
-                  <div className="h-1.5 w-full bg-white/20 rounded-full" />
-                  <div className="h-1.5 w-5/6 bg-white/15 rounded-full" />
+                  <div className="h-1 sm:h-1.5 w-full bg-white/20 rounded-full" />
                 </div>
 
-                {/* Coral Red Highlight Line (Matches Screenshot 2) */}
-                <div className="inline-flex items-center gap-2 px-2 py-0.5 bg-[#e24a4a]/25 border border-[#e24a4a]/50 text-[#ff7070] font-mono text-[9px] sm:text-[10px] font-bold rounded-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#e24a4a]" />
-                  <span>
+                <div className="inline-flex items-center gap-1.5 px-1.5 sm:px-2 py-0.5 bg-[#e24a4a]/25 border border-[#e24a4a]/50 text-[#ff7070] font-mono text-[8px] sm:text-[10px] font-bold rounded-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#e24a4a] shrink-0" />
+                  <span className="truncate">
                     {project.id === "system-anomaly"
-                      ? "ZERO ANOMALY // ISOLATION FOREST CONVERGED"
+                      ? "ZERO ANOMALIES // CONVERGED"
                       : project.id === "researchmind"
-                      ? "CRITIC AGENT // AUTOMATED QUALITY SCORING"
-                      : "ZERO LEAKAGE // SECURE EXECUTION CONFIRMED"}
+                      ? "AUTOMATED QUALITY SCORING"
+                      : "ZERO LEAKAGE VERIFIED"}
                   </span>
                 </div>
 
@@ -244,44 +238,44 @@ function ProjectDetails({
   isFirstProject?: boolean;
 }) {
   return (
-    <div className="w-full flex flex-col justify-between space-y-4 sm:space-y-6">
+    <div className="w-full flex flex-col justify-between space-y-3 sm:space-y-6">
       <div>
-        {/* Oversized Outlined Yellow Project Number (Exact from Screenshots 1 & 2) */}
-        <div className="relative inline-block select-none leading-none mb-2 sm:mb-3">
-          {/* Subtle 3D Wireframe Offset Layer */}
+        {/* Oversized Outlined Yellow Project Number */}
+        <div className="relative inline-block select-none leading-none mb-1.5 sm:mb-3">
+          {/* Wireframe Offset */}
           <span
             aria-hidden="true"
-            className="absolute top-1 left-1 font-display font-extrabold text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-transparent [WebkitTextStroke:1.5px_rgba(226,238,90,0.3)] pointer-events-none"
+            className="absolute top-1 left-1 font-display font-extrabold text-5xl sm:text-7xl md:text-8xl lg:text-9xl text-transparent [WebkitTextStroke:1.5px_rgba(226,238,90,0.3)] pointer-events-none"
           >
             {project.number}
           </span>
-          {/* Main Glowing Yellow Outlined Typography */}
-          <span className="relative font-display font-extrabold text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-transparent [WebkitTextStroke:2px_#e2ee5a] drop-shadow-[0_0_25px_rgba(226,238,90,0.3)]">
+          {/* Main Number */}
+          <span className="relative font-display font-extrabold text-5xl sm:text-7xl md:text-8xl lg:text-9xl text-transparent [WebkitTextStroke:2px_#e2ee5a] drop-shadow-[0_0_25px_rgba(226,238,90,0.3)]">
             {project.number}
           </span>
         </div>
 
-        {/* Small Monospace Label above title (Exact from Screenshots 1 & 2) */}
-        <div className="flex items-center gap-2 text-xs font-mono text-[#e2ee5a] uppercase tracking-wider mb-2">
+        {/* Small Monospace Label */}
+        <div className="flex items-center gap-2 text-[10px] sm:text-xs font-mono text-[#e2ee5a] uppercase tracking-wider mb-2">
           <span>02 // {project.category} // {project.year}</span>
         </div>
 
         {/* Bold Project Title */}
-        <h3 className="text-2xl sm:text-4xl md:text-5xl font-display font-extrabold text-white tracking-tight uppercase leading-[0.96] mb-3">
+        <h3 className="text-xl xs:text-2xl sm:text-4xl md:text-5xl font-display font-extrabold text-white tracking-tight uppercase leading-[0.98] mb-2 sm:mb-3 break-words">
           {project.title}
         </h3>
 
         {/* Short Editorial Description */}
-        <p className="text-xs sm:text-sm md:text-base text-ivory-300 font-sans leading-relaxed mb-4 max-w-xl">
+        <p className="text-xs sm:text-sm md:text-base text-ivory-300 font-sans leading-relaxed mb-3 sm:mb-4 max-w-xl">
           {project.description}
         </p>
 
-        {/* Tech Stack Pills (Black Rectangular Tags with White/Grey Border) */}
-        <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-6">
+        {/* Tech Stack Pills */}
+        <div className="flex flex-wrap gap-1 sm:gap-2 mb-4 sm:mb-6">
           {project.stack.map((tag) => (
             <span
               key={tag}
-              className="px-2.5 py-1 rounded-none bg-black/60 border border-white/20 text-[10px] sm:text-xs font-mono font-bold text-white tracking-wider uppercase hover:border-[#e2ee5a] transition-colors"
+              className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-none bg-black/60 border border-white/20 text-[9px] sm:text-xs font-mono font-bold text-white tracking-wider uppercase hover:border-[#e2ee5a] transition-colors"
             >
               {tag}
             </span>
@@ -289,13 +283,13 @@ function ProjectDetails({
         </div>
       </div>
 
-      {/* CTA Buttons: CASE FILES button opens project GitHub in new tab */}
-      <div className="flex flex-wrap items-center gap-4 pt-1 border-t border-white/10">
+      {/* CTA Buttons */}
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-white/10">
         <a
           href={project.github}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-none bg-[#e2ee5a] text-[#0a0a0c] font-mono text-xs sm:text-sm font-extrabold uppercase tracking-wider hover:bg-white hover:text-black transition-all shadow-[0_0_20px_rgba(226,238,90,0.3)] active:scale-95"
+          className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-none bg-[#e2ee5a] text-[#0a0a0c] font-mono text-xs sm:text-sm font-extrabold uppercase tracking-wider hover:bg-white hover:text-black transition-all shadow-[0_0_20px_rgba(226,238,90,0.3)] active:scale-95 min-h-[44px]"
         >
           <span>CASE FILES</span>
           <ArrowUpRight size={14} />
@@ -305,7 +299,7 @@ function ProjectDetails({
           href={project.github}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-mono text-ivory-300 hover:text-[#e2ee5a] transition-colors uppercase tracking-wider ml-1 group"
+          className="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm font-mono text-ivory-300 hover:text-[#e2ee5a] transition-colors uppercase tracking-wider group min-h-[44px] px-2"
         >
           <Github size={14} />
           <span>VIEW REPOSITORY</span>
@@ -550,55 +544,55 @@ export function ChapterCaseFiles() {
         </div>
       </div>
 
-      {/* FULLY DYNAMIC HORIZONTAL PROJECT SHOWCASE TRACK (ALTERNATING LAYOUT) */}
+      {/* FULLY DYNAMIC HORIZONTAL PROJECT SHOWCASE TRACK */}
       <div
         ref={trackRef}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        className="flex gap-6 sm:gap-10 md:gap-14 overflow-x-auto scroll-smooth snap-x snap-mandatory px-5 sm:px-8 lg:px-12 hide-scrollbar cursor-grab active:cursor-grabbing will-change-scroll py-2"
-        style={{ scrollSnapType: "x mandatory" }}
+        className="flex gap-4 sm:gap-8 md:gap-14 overflow-x-auto scroll-smooth snap-x snap-mandatory px-4 sm:px-8 lg:px-12 hide-scrollbar cursor-grab active:cursor-grabbing will-change-scroll py-2"
+        style={{ scrollSnapType: "x mandatory", touchAction: "pan-x pan-y" }}
       >
         {featuredProjects.map((project, idx) => {
-          // Slide 0: Project 01 (Includes the editorial intro "THREE SYSTEMS. Built in 2026." on the left)
+          // Slide 0: Project 01
           if (idx === 0) {
             return (
               <article
                 key={project.id}
-                className="w-[92vw] max-w-[1280px] shrink-0 snap-center rounded-2xl bg-gradient-to-b from-[#101015] to-[#08080b] border border-white/15 p-6 sm:p-8 md:p-10 shadow-2xl transition-all"
+                className="w-[88vw] xs:w-[90vw] sm:w-[92vw] max-w-[1280px] shrink-0 snap-center rounded-2xl bg-gradient-to-b from-[#101015] to-[#08080b] border border-white/15 p-4 sm:p-8 md:p-10 shadow-2xl transition-all"
               >
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-                  {/* Left Side: Large Editorial Heading "THREE SYSTEMS. Built in 2026." (Exact from Screenshot 1) */}
-                  <div className="lg:col-span-5 flex flex-col justify-between space-y-6 pr-0 lg:pr-6 border-b lg:border-b-0 lg:border-r border-white/10 pb-6 lg:pb-0">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-center">
+                  {/* Left Side: Large Editorial Heading */}
+                  <div className="lg:col-span-5 flex flex-col justify-between space-y-4 sm:space-y-6 pr-0 lg:pr-6 border-b lg:border-b-0 lg:border-r border-white/10 pb-4 sm:pb-6 lg:pb-0">
                     <div>
-                      {/* Section Tag with line (Screenshot 1) */}
-                      <div className="flex items-center gap-3 mb-6">
-                        <span className="px-2.5 py-0.5 bg-[#e2ee5a] text-[#0a0a0c] font-mono text-xs font-bold uppercase rounded-none">
+                      {/* Section Tag */}
+                      <div className="flex items-center gap-3 mb-4 sm:mb-6">
+                        <span className="px-2.5 py-0.5 bg-[#e2ee5a] text-[#0a0a0c] font-mono text-[10px] sm:text-xs font-bold uppercase rounded-none">
                           02 // CASE FILES
                         </span>
                         <div className="flex-1 h-[1px] bg-white/15" />
                       </div>
 
-                      <h2 className="text-4xl sm:text-6xl md:text-7xl font-condensed font-extrabold text-white tracking-tight uppercase leading-[0.9]">
+                      <h2 className="text-3xl sm:text-6xl md:text-7xl font-condensed font-extrabold text-white tracking-tight uppercase leading-[0.92]">
                         SELECTED<br />WORKS
                       </h2>
-                      <div className="text-3xl sm:text-5xl md:text-4xl font-serif italic font-normal text-[#e2ee5a] mt-2 mb-6 leading-none">
+                      <div className="text-2xl sm:text-4xl font-serif italic font-normal text-[#e2ee5a] mt-1.5 mb-3 sm:mb-6 leading-none">
                         Built to make an impact
                       </div>
 
                       <p className="text-xs sm:text-sm text-ivory-300 font-sans leading-relaxed max-w-md">
-                        Autonomous multi-agent workspaces, intelligent research pipelines, and real-time machine-learning OS anomaly detection engines built for production scale. → drag the torch to inspect.
+                        Autonomous multi-agent workspaces, intelligent research pipelines, and real-time machine-learning OS anomaly detection engines built for production scale.
                       </p>
                     </div>
 
-                    <div className="pt-4 space-y-2">
-                      <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#e2ee5a] tracking-widest uppercase">
-                        <span>KEEP SCROLLING</span>
+                    <div className="pt-2 sm:pt-4 space-y-2">
+                      <div className="flex items-center gap-2 text-[10px] sm:text-xs font-mono font-bold text-[#e2ee5a] tracking-widest uppercase">
+                        <span>SWIPE TO BROWSE</span>
                         <span>→</span>
                       </div>
-                      {/* Yellow Progress Indicator Bar (Screenshot 1) */}
-                      <div className="w-40 h-[2px] bg-white/10 rounded-full overflow-hidden">
+                      {/* Yellow Progress Indicator Bar */}
+                      <div className="w-32 sm:w-40 h-[2px] bg-white/10 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-[#e2ee5a] transition-all duration-150"
                           style={{ width: `${Math.max(15, scrollProgress * 100)}%` }}
@@ -607,8 +601,8 @@ export function ChapterCaseFiles() {
                     </div>
                   </div>
 
-                  {/* Right Side: Project 01 Information + Visual Preview (Screenshot 1) */}
-                  <div className="lg:col-span-7 space-y-6">
+                  {/* Right Side: Project 01 Information + Visual Preview */}
+                  <div className="lg:col-span-7 space-y-4 sm:space-y-6">
                     <ProjectDetails project={project} isFirstProject={true} />
                     <div className="pt-2">
                       <TorchlightPreview project={project} />
@@ -619,37 +613,28 @@ export function ChapterCaseFiles() {
             );
           }
 
-          // Alternating Pattern for Projects 2, 3, 4, 5:
-          // Even indexes (Project 02, 04): VISUAL ON LEFT, INFO ON RIGHT (Exact match of Screenshot 2!)
-          // Odd indexes (Project 03, 05): INFO ON LEFT, VISUAL ON RIGHT
-          const isVisualOnLeft = idx % 2 === 1; // Project 02 has idx=1 (odd 0-based), so visual is on the left!
+          const isVisualOnLeft = idx % 2 === 1;
 
           return (
             <article
               key={project.id}
-              className="w-[92vw] max-w-[1280px] shrink-0 snap-center rounded-2xl bg-gradient-to-b from-[#101015] to-[#08080b] border border-white/15 p-6 sm:p-8 md:p-10 shadow-2xl transition-all"
+              className="w-[88vw] xs:w-[90vw] sm:w-[92vw] max-w-[1280px] shrink-0 snap-center rounded-2xl bg-gradient-to-b from-[#101015] to-[#08080b] border border-white/15 p-4 sm:p-8 md:p-10 shadow-2xl transition-all"
             >
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-center">
                 {isVisualOnLeft ? (
                   <>
-                    {/* LEFT COLUMN: Large Visual Preview + Metrics Row (Exact Screenshot 2!) */}
                     <div className="lg:col-span-6 order-2 lg:order-1">
                       <TorchlightPreview project={project} />
                     </div>
-
-                    {/* RIGHT COLUMN: Project Number, Title, Description, Stack, CTA (Screenshot 2!) */}
                     <div className="lg:col-span-6 order-1 lg:order-2">
                       <ProjectDetails project={project} />
                     </div>
                   </>
                 ) : (
                   <>
-                    {/* LEFT COLUMN: Project Information */}
                     <div className="lg:col-span-6">
                       <ProjectDetails project={project} />
                     </div>
-
-                    {/* RIGHT COLUMN: Large Visual Preview + Metrics Row */}
                     <div className="lg:col-span-6">
                       <TorchlightPreview project={project} />
                     </div>

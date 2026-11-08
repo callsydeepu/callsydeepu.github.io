@@ -166,7 +166,7 @@ export function ChapterCertifications() {
                 key={cat}
                 type="button"
                 onClick={() => handleCategoryChange(cat)}
-                className={`px-3 py-1 text-[11px] font-mono font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer select-none rounded-none border ${
+                className={`px-2.5 sm:px-3 py-1 sm:py-1 text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer select-none rounded-none border min-h-[32px] sm:min-h-0 flex items-center justify-center ${
                   selectedCategory === cat
                     ? "bg-[#e2ee5a] text-[#0a0a0c] border-[#e2ee5a] shadow-[0_0_12px_rgba(226,238,90,0.35)]"
                     : "bg-white/5 text-ivory-300 border-white/10 hover:border-white/25 hover:text-white"
@@ -188,15 +188,15 @@ export function ChapterCertifications() {
             />
           )}
 
-          {/* Scrollable Container */}
+          {/* Scrollable Container with Mobile Overscroll Containment */}
           <div
             ref={scrollContainerRef}
             onScroll={checkScroll}
             tabIndex={0}
             role="region"
             aria-label="Scrollable certifications list"
-            className="editorial-scrollbar max-h-[225px] sm:max-h-[235px] md:max-h-[240px] overflow-y-auto overflow-x-hidden divide-y divide-white/10 focus:outline-none focus:ring-1 focus:ring-[#e2ee5a]/30 pr-1 sm:pr-2 select-text"
-            style={{ touchAction: "pan-y" }}
+            className="editorial-scrollbar max-h-[250px] xs:max-h-[245px] sm:max-h-[240px] overflow-y-auto overflow-x-hidden divide-y divide-white/10 focus:outline-none focus:ring-1 focus:ring-[#e2ee5a]/30 pr-1 sm:pr-2 select-text"
+            style={{ touchAction: "pan-y", overscrollBehaviorY: "contain" }}
           >
             {filteredCerts.map((cert, idx) => {
               const hasLink = Boolean(cert.link);
