@@ -87,13 +87,13 @@ export function Navbar() {
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
         scrolled || mobileMenuOpen
-          ? "bg-[#0a0a0c]/90 backdrop-blur-md border-b border-white/10 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
-          : "bg-gradient-to-b from-[#0a0a0c]/85 via-[#0a0a0c]/40 to-transparent py-4 border-b border-transparent"
+          ? "bg-[#0a0a0c]/90 backdrop-blur-md border-b border-white/10 py-3 sm:py-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
+          : "bg-gradient-to-b from-[#0a0a0c]/85 via-[#0a0a0c]/40 to-transparent py-4 sm:py-4.5 border-b border-transparent"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 flex items-center justify-between gap-4 xl:gap-8 w-full">
-        {/* Left: Brand / Logo */}
-        <div className="flex items-center justify-start shrink-0">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 w-full grid grid-cols-2 lg:grid-cols-[1fr_auto_1fr] items-center gap-x-4 lg:gap-x-6 xl:gap-x-8">
+        {/* 1. Left: Brand / Logo Section */}
+        <div className="flex items-center justify-start justify-self-start">
           <a
             href="#subject"
             className="flex items-center gap-3 sm:gap-3.5 text-white group select-none shrink-0"
@@ -118,8 +118,8 @@ export function Navbar() {
           </a>
         </div>
 
-        {/* Center: Minimal Navigation Links (Desktop: Laptops & Wide Displays) */}
-        <nav className="hidden lg:flex items-center justify-center flex-1 gap-4 lg:gap-5 xl:gap-7 2xl:gap-8">
+        {/* 2. Center: Minimal Navigation Links (Desktop: Laptops & Wide Displays) */}
+        <nav className="hidden lg:flex items-center justify-center justify-self-center gap-3.5 xl:gap-6 2xl:gap-8">
           {navItems.map((item) => {
             const isActive = activeSection === item.href;
             return (
@@ -130,7 +130,7 @@ export function Navbar() {
                   e.preventDefault();
                   handleNavClick(item.href);
                 }}
-                className={`group relative inline-flex flex-col items-center justify-center py-1.5 px-0.5 text-[11px] xl:text-xs font-mono font-medium tracking-[0.16em] xl:tracking-[0.18em] uppercase transition-colors duration-200 whitespace-nowrap shrink-0 ${
+                className={`group relative inline-flex flex-col items-center justify-center py-1.5 px-1 text-[11px] xl:text-xs font-mono font-medium tracking-[0.14em] xl:tracking-[0.18em] uppercase transition-colors duration-200 whitespace-nowrap shrink-0 ${
                   isActive
                     ? "text-[#e2ee5a] font-bold"
                     : "text-zinc-300 hover:text-white"
@@ -143,12 +143,12 @@ export function Navbar() {
                 {/* Active & Hover Underline Indicator Centered */}
                 {isActive ? (
                   <span
-                    className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#e2ee5a] shadow-[0_0_10px_rgba(226,238,90,0.7)] rounded-full transition-all duration-300"
+                    className="absolute bottom-0 inset-x-1 h-[2px] bg-[#e2ee5a] shadow-[0_0_10px_rgba(226,238,90,0.7)] rounded-full transition-all duration-300"
                     aria-hidden="true"
                   />
                 ) : (
                   <span
-                    className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[#e2ee5a] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center rounded-full opacity-70"
+                    className="absolute bottom-0 inset-x-1 h-[1.5px] bg-[#e2ee5a] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center rounded-full opacity-70"
                     aria-hidden="true"
                   />
                 )}
@@ -157,84 +157,87 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* Right: Desktop Controls (>= 1024px): Lights, Resume & Admin Lock */}
-        <div className="hidden lg:flex items-center justify-end gap-2.5 xl:gap-3 shrink-0">
-          {/* Desktop LIGHTS ON / OFF Toggle */}
-          <button
-            type="button"
-            onClick={toggleLights}
-            aria-label={isLightsOn ? "Switch to Lights Off" : "Switch to Lights On"}
-            className={`inline-flex items-center gap-1.5 xl:gap-2 px-3 xl:px-3.5 py-1.5 rounded-full text-[10.5px] xl:text-[11px] font-mono font-bold tracking-wider transition-all duration-300 cursor-pointer h-8 select-none border shrink-0 ${
-              isLightsOn
-                ? "bg-[#e2ee5a] text-[#0a0a0c] border-[#e2ee5a] shadow-[0_0_18px_rgba(226,238,90,0.45)]"
-                : "bg-white/5 border-white/15 text-zinc-300 hover:border-[#e2ee5a]/60 hover:text-[#e2ee5a] hover:bg-white/10"
-            }`}
-          >
-            {isLightsOn ? <Sun size={12.5} /> : <Moon size={12.5} />}
-            <span className="whitespace-nowrap">{isLightsOn ? "LIGHTS OFF" : "LIGHTS ON"}</span>
-          </button>
+        {/* 3. Right: Action Controls (Desktop + Mobile in single grid cell) */}
+        <div className="flex items-center justify-end justify-self-end">
+          {/* Desktop Controls (>= 1024px): Lights, Resume & Admin Lock */}
+          <div className="hidden lg:flex items-center gap-2 xl:gap-2.5 shrink-0">
+            {/* Desktop LIGHTS ON / OFF Toggle */}
+            <button
+              type="button"
+              onClick={toggleLights}
+              aria-label={isLightsOn ? "Switch to Lights Off" : "Switch to Lights On"}
+              className={`inline-flex items-center gap-1.5 xl:gap-2 px-3 xl:px-3.5 py-1.5 rounded-full text-[10.5px] xl:text-[11px] font-mono font-bold tracking-wider transition-all duration-300 cursor-pointer h-8 select-none border shrink-0 ${
+                isLightsOn
+                  ? "bg-[#e2ee5a] text-[#0a0a0c] border-[#e2ee5a] shadow-[0_0_18px_rgba(226,238,90,0.45)]"
+                  : "bg-white/5 border-white/15 text-zinc-300 hover:border-[#e2ee5a]/60 hover:text-[#e2ee5a] hover:bg-white/10"
+              }`}
+            >
+              {isLightsOn ? <Sun size={12.5} /> : <Moon size={12.5} />}
+              <span className="whitespace-nowrap">{isLightsOn ? "LIGHTS OFF" : "LIGHTS ON"}</span>
+            </button>
 
-          {/* Resume Pill Button */}
-          <a
-            href={profile.resumePdf}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 xl:px-3.5 py-1.5 rounded-full bg-white/5 border border-white/15 text-[10.5px] xl:text-[11px] font-mono font-bold text-zinc-200 hover:border-[#e2ee5a] hover:text-[#e2ee5a] hover:bg-white/10 transition-all h-8 active:scale-95 whitespace-nowrap select-none shrink-0"
-          >
-            <FileText size={12} />
-            <span>RESUME</span>
-            <ArrowUpRight size={11} className="opacity-70" />
-          </a>
+            {/* Resume Pill Button */}
+            <a
+              href={profile.resumePdf}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 xl:px-3.5 py-1.5 rounded-full bg-white/5 border border-white/15 text-[10.5px] xl:text-[11px] font-mono font-bold text-zinc-200 hover:border-[#e2ee5a] hover:text-[#e2ee5a] hover:bg-white/10 transition-all h-8 active:scale-95 whitespace-nowrap select-none shrink-0"
+            >
+              <FileText size={12} />
+              <span>RESUME</span>
+              <ArrowUpRight size={11} className="opacity-70" />
+            </a>
 
-          {/* Admin Lock Icon */}
-          <button
-            type="button"
-            onClick={() => {
-              if (isAuthenticated) {
-                setIsAdminOpen(true);
-              } else {
-                setIsLoginModalOpen(true);
-              }
-            }}
-            title={isAuthenticated ? "Open CMS Dashboard" : "Admin CMS Login"}
-            aria-label="Admin CMS Portal"
-            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/15 text-zinc-400 hover:border-[#e2ee5a] hover:text-[#e2ee5a] hover:bg-white/10 transition-all cursor-pointer relative active:scale-95 shrink-0"
-          >
-            <Lock size={12} />
-            {isAuthenticated && (
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#e2ee5a] shadow-[0_0_6px_#e2ee5a]" />
-            )}
-          </button>
-        </div>
+            {/* Admin Lock Icon */}
+            <button
+              type="button"
+              onClick={() => {
+                if (isAuthenticated) {
+                  setIsAdminOpen(true);
+                } else {
+                  setIsLoginModalOpen(true);
+                }
+              }}
+              title={isAuthenticated ? "Open CMS Dashboard" : "Admin CMS Login"}
+              aria-label="Admin CMS Portal"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/15 text-zinc-400 hover:border-[#e2ee5a] hover:text-[#e2ee5a] hover:bg-white/10 transition-all cursor-pointer relative active:scale-95 shrink-0"
+            >
+              <Lock size={12} />
+              {isAuthenticated && (
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#e2ee5a] shadow-[0_0_6px_#e2ee5a]" />
+              )}
+            </button>
+          </div>
 
-        {/* Mobile / Tablet Controls (< 1024px) */}
-        <div className="flex lg:hidden items-center gap-2 sm:gap-2.5 shrink-0">
-          {/* Quick Resume Pill on Mobile Header */}
-          <a
-            href={profile.resumePdf}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/15 text-[10px] font-mono font-bold text-zinc-200 hover:text-[#e2ee5a] hover:border-[#e2ee5a] active:scale-95 transition-all"
-            aria-label="View Resume"
-          >
-            <FileText size={11} />
-            <span>RESUME</span>
-          </a>
+          {/* Mobile / Tablet Controls (< 1024px) */}
+          <div className="flex lg:hidden items-center gap-2 sm:gap-2.5 shrink-0">
+            {/* Quick Resume Pill on Mobile Header */}
+            <a
+              href={profile.resumePdf}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/15 text-[10px] font-mono font-bold text-zinc-200 hover:text-[#e2ee5a] hover:border-[#e2ee5a] active:scale-95 transition-all"
+              aria-label="View Resume"
+            >
+              <FileText size={11} />
+              <span>RESUME</span>
+            </a>
 
-          {/* Hamburger Menu Toggle */}
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-            aria-expanded={mobileMenuOpen}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer border active:scale-90 ${
-              mobileMenuOpen
-                ? "bg-[#e2ee5a] text-[#0a0a0c] border-[#e2ee5a] shadow-[0_0_15px_rgba(226,238,90,0.4)]"
-                : "bg-white/5 border-white/15 text-zinc-100 hover:border-[#e2ee5a]/60 hover:text-[#e2ee5a]"
-            }`}
-          >
-            {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
-          </button>
+            {/* Hamburger Menu Toggle */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={mobileMenuOpen}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer border active:scale-90 ${
+                mobileMenuOpen
+                  ? "bg-[#e2ee5a] text-[#0a0a0c] border-[#e2ee5a] shadow-[0_0_15px_rgba(226,238,90,0.4)]"
+                  : "bg-white/5 border-white/15 text-zinc-100 hover:border-[#e2ee5a]/60 hover:text-[#e2ee5a]"
+              }`}
+            >
+              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+          </div>
         </div>
       </div>
 
