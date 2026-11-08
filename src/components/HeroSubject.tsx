@@ -23,15 +23,27 @@ export function HeroSubject() {
   const currentPos = useRef({ x: 0, y: 0 });
   const rafId = useRef<number | null>(null);
 
+  // Set initial resting spotlight position at portrait center
+  useEffect(() => {
+    if (!heroRef.current) return;
+    const rect = heroRef.current.getBoundingClientRect();
+    const defaultX = rect.width * 0.65;
+    const defaultY = rect.height * 0.42;
+    mousePos.current = { x: defaultX, y: defaultY };
+    currentPos.current = { x: defaultX, y: defaultY };
+    heroRef.current.style.setProperty("--spot-x", `${defaultX.toFixed(1)}px`);
+    heroRef.current.style.setProperty("--spot-y", `${defaultY.toFixed(1)}px`);
+  }, []);
+
   // Smooth spotlight movement interpolation with natural glide
   const updateSpotlight = useCallback(() => {
     if (!heroRef.current) return;
 
-    currentPos.current.x += (mousePos.current.x - currentPos.current.x) * 0.14;
-    currentPos.current.y += (mousePos.current.y - currentPos.current.y) * 0.14;
+    currentPos.current.x += (mousePos.current.x - currentPos.current.x) * 0.18;
+    currentPos.current.y += (mousePos.current.y - currentPos.current.y) * 0.18;
 
-    heroRef.current.style.setProperty("--spot-x", `${currentPos.current.x}px`);
-    heroRef.current.style.setProperty("--spot-y", `${currentPos.current.y}px`);
+    heroRef.current.style.setProperty("--spot-x", `${currentPos.current.x.toFixed(1)}px`);
+    heroRef.current.style.setProperty("--spot-y", `${currentPos.current.y.toFixed(1)}px`);
 
     rafId.current = requestAnimationFrame(updateSpotlight);
   }, []);
@@ -43,36 +55,78 @@ export function HeroSubject() {
     };
   }, [updateSpotlight]);
 
-  const handlePointerMove = (e: React.PointerEvent<HTMLElement>) => {
-    if (!heroRef.current) return;
-    const rect = heroRef.current.getBoundingClientRect();
-    mousePos.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-  };
+  // High-performance native touch listeners for mobile & tablet devices
+  useEffect(() => {
+    const heroEl = heroRef.current;
+    if (!heroEl) return;
 
-  const handleTouchMove = (e: React.TouchEvent<HTMLElement>) => {
-    if (!heroRef.current || !e.touches[0]) return;
-    const rect = heroRef.current.getBoundingClientRect();
-    mousePos.current = {
-      x: e.touches[0].clientX - rect.left,
-      y: e.touches[0].clientY - rect.top
-    };
-  };
+    const onTouchStart = (e: TouchEvent) => {
+      if (!e.touches[0]) return;
+      const rect = heroEl.getBoundingClientRect();
+      const x = e.touches[0].clientX - rect.left;
+      const y = e.touches[0].clientY - rect.top;
 
+      // Prevent jumping: align current and target position instantly on first touch
+      mousePos.current = { x, y };
+      currentPos.current = { x, y };
+      heroEl.style.setProperty("--spot-x", `${x.toFixed(1)}px`);
+      heroEl.style.setProperty("--spot-y", `${y.toFixed(1)}px`);
+
+      setIsHovered(true);
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!e.touches[0]) return;
+      const rect = heroEl.getBoundingClientRect();
+      // Update target coordinates without triggering React state updates
+      mousePos.current = {
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top
+      };
+    };
+
+    const onTouchEnd = () => {
+      setIsHovered(false);
+    };
+
+    // Passive listeners allow fluid vertical scrolling without blockage
+    heroEl.addEventListener("touchstart", onTouchStart, { passive: true });
+    heroEl.addEventListener("touchmove", onTouchMove, { passive: true });
+    heroEl.addEventListener("touchend", onTouchEnd, { passive: true });
+    heroEl.addEventListener("touchcancel", onTouchEnd, { passive: true });
+
+    return () => {
+      heroEl.removeEventListener("touchstart", onTouchStart);
+      heroEl.removeEventListener("touchmove", onTouchMove);
+      heroEl.removeEventListener("touchend", onTouchEnd);
+      heroEl.removeEventListener("touchcancel", onTouchEnd);
+    };
+  }, []);
+
+  // Desktop Pointer / Mouse Event Handlers
   const handlePointerEnter = (e: React.PointerEvent<HTMLElement>) => {
+    if (e.pointerType === "touch") return; // Touch handled by native listeners
     setIsHovered(true);
     if (!heroRef.current) return;
     const rect = heroRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    mousePos.current = { x, y };
+    currentPos.current = { x, y };
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLElement>) => {
+    if (e.pointerType === "touch") return;
+    if (!heroRef.current) return;
+    const rect = heroRef.current.getBoundingClientRect();
     mousePos.current = {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top
     };
-    currentPos.current = { ...mousePos.current };
   };
 
-  const handlePointerLeave = () => {
+  const handlePointerLeave = (e: React.PointerEvent<HTMLElement>) => {
+    if (e.pointerType === "touch") return;
     setIsHovered(false);
   };
 
@@ -297,7 +351,6 @@ export function HeroSubject() {
       onPointerMove={handlePointerMove}
       onPointerEnter={handlePointerEnter}
       onPointerLeave={handlePointerLeave}
-      onTouchMove={handleTouchMove}
       className="relative min-h-screen min-h-[100vh] min-h-[100svh] hero-viewport-height w-full pt-20 sm:pt-28 lg:pt-32 pb-8 sm:pb-8 lg:pb-10 flex flex-col justify-between overflow-hidden bg-[#111111] select-none"
       style={{ touchAction: "pan-y" }}
     >
@@ -374,8 +427,8 @@ export function HeroSubject() {
                 {isLightsOn
                   ? "● LIGHTS ACTIVE // FULL SYSTEM ILLUMINATED"
                   : isHovered
-                  ? "● SPOTLIGHT ACTIVE // MOVE CURSOR TO INSPECT"
-                  : "● AMBIENT MODE // TOGGLE LIGHTS OR TOUCH"}
+                  ? "● SPOTLIGHT ACTIVE // DRAG OR MOVE TO INSPECT"
+                  : "● AMBIENT MODE // TOUCH OR MOVE CURSOR"}
               </span>
             </div>
 
@@ -466,31 +519,42 @@ export function HeroSubject() {
       </div>
 
       {/* 3. LIGHTS OFF / ON INTERACTIVE SPOTLIGHT MASK (RESPONSIVE FOR TOUCH AND DESKTOP) */}
+      
+      {/* Ambient resting mask when not hovered and lights off */}
       <div
-        className="absolute inset-0 pointer-events-none z-30 transition-opacity duration-700"
+        className="absolute inset-0 pointer-events-none z-30 transition-opacity duration-700 ease-out"
         style={{
-          opacity: isLightsOn ? 0 : 1,
-          background: isHovered
-            ? `radial-gradient(circle 280px at var(--spot-x, 70%) var(--spot-y, 45%), rgba(255,255,255,0.01) 0%, rgba(226,238,90,0.08) 35%, rgba(17,17,17,0.72) 65%, rgba(17,17,17,0.92) 100%)`
-            : `radial-gradient(circle 380px at var(--spot-x, 50%) var(--spot-y, 40%), rgba(226,238,90,0.09) 0%, rgba(17,17,17,0.48) 55%, rgba(17,17,17,0.88) 100%)`
+          opacity: !isLightsOn && !isHovered ? 1 : 0,
+          background: `radial-gradient(circle clamp(260px, 42vw, 420px) at var(--spot-x, 50%) var(--spot-y, 40%), rgba(226,238,90,0.08) 0%, rgba(17,17,17,0.52) 55%, rgba(17,17,17,0.90) 100%)`
         }}
+        aria-hidden="true"
       />
 
-      {/* Center Specular Glare beneath cursor during hover */}
-      {!isLightsOn && isHovered && (
-        <div
-          className="absolute pointer-events-none z-35 rounded-full -translate-x-1/2 -translate-y-1/2 transition-opacity duration-150"
-          style={{
-            left: "var(--spot-x, 70%)",
-            top: "var(--spot-y, 45%)",
-            width: "140px",
-            height: "140px",
-            background:
-              "radial-gradient(circle, rgba(255,255,255,0.35) 0%, rgba(226,238,90,0.15) 45%, transparent 70%)",
-            filter: "blur(10px)"
-          }}
-        />
-      )}
+      {/* Active interactive spotlight layer (smoothly fades in on touch / hover) */}
+      <div
+        className="absolute inset-0 pointer-events-none z-30 transition-opacity duration-400 ease-out"
+        style={{
+          opacity: !isLightsOn && isHovered ? 1 : 0,
+          background: `radial-gradient(circle clamp(220px, 35vw, 320px) at var(--spot-x, 50%) var(--spot-y, 45%), rgba(255,255,255,0.02) 0%, rgba(226,238,90,0.12) 30%, rgba(17,17,17,0.68) 65%, rgba(17,17,17,0.94) 100%)`
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Center Specular Glare directly beneath touch point / cursor */}
+      <div
+        className="absolute pointer-events-none z-35 rounded-full -translate-x-1/2 -translate-y-1/2 transition-opacity duration-300 ease-out"
+        style={{
+          opacity: !isLightsOn && isHovered ? 1 : 0,
+          left: "var(--spot-x, 50%)",
+          top: "var(--spot-y, 45%)",
+          width: "140px",
+          height: "140px",
+          background:
+            "radial-gradient(circle, rgba(255,255,255,0.36) 0%, rgba(226,238,90,0.16) 45%, transparent 70%)",
+          filter: "blur(12px)"
+        }}
+        aria-hidden="true"
+      />
 
 
 
