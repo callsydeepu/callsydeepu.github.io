@@ -1,8 +1,22 @@
-import { defineConfig } from "vite";
+import { defineConfig, type PluginOption } from "vite";
 import react from "@vitejs/plugin-react";
-// @ts-ignore
-import { adminApiPlugin } from "./server/apiPlugin.js";
 
-export default defineConfig({
-  plugins: [react(), adminApiPlugin()]
+export default defineConfig(async ({ command }) => {
+  const plugins: PluginOption[] = [react()];
+
+  // Only load the admin CMS server middleware when running dev/preview server
+  if (command === "serve") {
+    try {
+      const apiPluginModule = "./server/apiPlugin.js";
+      // @ts-ignore
+      const { adminApiPlugin } = await import(/* @vite-ignore */ apiPluginModule);
+      plugins.push(adminApiPlugin());
+    } catch {
+      // Dev CMS plugin skipped
+    }
+  }
+
+  return {
+    plugins
+  };
 });
