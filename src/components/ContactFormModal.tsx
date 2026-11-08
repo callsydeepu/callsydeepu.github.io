@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Send, X, CheckCircle, Mail, AlertCircle, ExternalLink } from "lucide-react";
+import { Send, X, CheckCircle, Mail, AlertCircle, ExternalLink, Loader2 } from "lucide-react";
 import { profile } from "../data";
+import { apiFetch } from "../config/api";
 
 interface ContactFormModalProps {
   isOpen: boolean;
@@ -17,8 +18,16 @@ export function ContactFormModal({ isOpen, onClose }: ContactFormModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showMailtoAction, setShowMailtoAction] = useState(false);
 
   if (!isOpen) return null;
+
+  const targetEmail = profile.email || "deepakambati5@gmail.com";
+  const mailtoUrl = `mailto:${targetEmail}?subject=${encodeURIComponent(
+    subject.trim() || `Project Inquiry from ${name.trim()}`
+  )}&body=${encodeURIComponent(
+    `Name: ${name.trim()}\nEmail: ${email.trim()}\n\nMessage:\n${message.trim()}`
+  )}`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,18 +38,11 @@ export function ContactFormModal({ isOpen, onClose }: ContactFormModalProps) {
 
     setIsSubmitting(true);
     setError(null);
-
-    const targetEmail = profile.email || "deepakambati5@gmail.com";
-    const mailtoUrl = `mailto:${targetEmail}?subject=${encodeURIComponent(
-      subject.trim() || `Project Inquiry from ${name.trim()}`
-    )}&body=${encodeURIComponent(
-      `Name: ${name.trim()}\nEmail: ${email.trim()}\n\nMessage:\n${message.trim()}`
-    )}`;
+    setShowMailtoAction(false);
 
     try {
-      const res = await fetch("/api/contact", {
+      const res = await apiFetch("/api/contact", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
           email: email.trim(),
@@ -55,13 +57,19 @@ export function ContactFormModal({ isOpen, onClose }: ContactFormModalProps) {
         return;
       }
 
-      // If backend is not hosted (GitHub Pages static host 404), fall back to mailto client
-      window.location.href = mailtoUrl;
-      setSubmitted(true);
+      const data = await res.json().catch(() => null);
+      if (data && data.error) {
+        setError(data.error);
+        return;
+      }
+
+      // If backend returned 404 or unhandled response (e.g. unhosted backend on GitHub Pages)
+      setError("Backend server is currently offline or unreachable. You can transmit this message directly via email:");
+      setShowMailtoAction(true);
     } catch (err) {
-      // Offline or network error: fall back to mailto client directly
-      window.location.href = mailtoUrl;
-      setSubmitted(true);
+      // Network failure
+      setError("Network error connecting to backend server. You can transmit this message directly via email:");
+      setShowMailtoAction(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -74,6 +82,7 @@ export function ContactFormModal({ isOpen, onClose }: ContactFormModalProps) {
     setMessage("");
     setSubmitted(false);
     setError(null);
+    setShowMailtoAction(false);
     onClose();
   };
 
@@ -129,9 +138,22 @@ export function ContactFormModal({ isOpen, onClose }: ContactFormModalProps) {
             </p>
 
             {error && (
-              <div className="mb-4 p-3 bg-red-950/60 border border-red-500/50 text-red-200 text-xs flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                <span className="leading-snug">{error}</span>
+              <div className="mb-4 p-3 bg-red-950/60 border border-red-500/50 text-red-200 text-xs space-y-2">
+                <div className="flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                  <span className="leading-snug">{error}</span>
+                </div>
+                {showMailtoAction && (
+                  <div className="pt-1">
+                    <a
+                      href={mailtoUrl}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#e2ee5a] text-[#0a0a0c] font-mono text-[11px] font-bold uppercase tracking-wider hover:bg-white transition-colors"
+                    >
+                      <span>TRANSMIT VIA EMAIL CLIENT</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                )}
               </div>
             )}
 

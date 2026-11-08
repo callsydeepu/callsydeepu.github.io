@@ -283,27 +283,17 @@ function ProjectDetails({
         </div>
       </div>
 
-      {/* CTA Buttons */}
-      <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-white/10">
+      {/* Repository Action Button */}
+      <div className="flex items-center pt-3 sm:pt-4 border-t border-white/10">
         <a
           href={project.github}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-none bg-[#e2ee5a] text-[#0a0a0c] font-mono text-xs sm:text-sm font-extrabold uppercase tracking-wider hover:bg-white hover:text-black transition-all shadow-[0_0_20px_rgba(226,238,90,0.3)] active:scale-95 min-h-[44px]"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-none bg-[#e2ee5a] text-[#0a0a0c] font-mono text-xs sm:text-sm font-extrabold uppercase tracking-wider hover:bg-white hover:text-black transition-all shadow-[0_0_20px_rgba(226,238,90,0.3)] active:scale-95 min-h-[44px]"
         >
-          <span>CASE FILES</span>
+          <Github size={15} />
+          <span>VIEW REPO</span>
           <ArrowUpRight size={14} />
-        </a>
-
-        <a
-          href={project.github}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm font-mono text-ivory-300 hover:text-[#e2ee5a] transition-colors uppercase tracking-wider group min-h-[44px] px-2"
-        >
-          <Github size={14} />
-          <span>VIEW REPOSITORY</span>
-          <span className="group-hover:translate-x-1 transition-transform">→</span>
         </a>
       </div>
     </div>

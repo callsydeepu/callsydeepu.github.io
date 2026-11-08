@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Lock, Eye, EyeOff, X, ShieldAlert, KeyRound } from "lucide-react";
 import { usePortfolioData } from "../../context/PortfolioContext";
+import { apiFetch } from "../../config/api";
 
 export function AdminLoginModal() {
   const { isLoginModalOpen, setIsLoginModalOpen, setIsAuthenticated, setIsAdminOpen } =
@@ -24,26 +25,35 @@ export function AdminLoginModal() {
     setError(null);
 
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await apiFetch("/api/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password })
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        setError(data.error || "Authentication failed. Invalid password.");
+        if (data && data.error) {
+          setError(data.error);
+        } else if (res.status === 404 || res.status === 405) {
+          setError("Backend server is not running or unhosted on this domain. Deploy the backend to Render/Railway and set VITE_API_URL.");
+        } else {
+          setError("Authentication failed. Invalid password or server error.");
+        }
         return;
       }
 
-      // Success
+      // Success: store token for cross-domain auth resilience
+      if (data && data.token) {
+        localStorage.setItem("admin_token", data.token);
+      }
+
       setIsAuthenticated(true);
       setIsLoginModalOpen(false);
       setPassword("");
       setIsAdminOpen(true);
     } catch (err) {
-      setError("Network or server error. Please try again.");
+      setError("Cannot reach backend server. Please verify your backend is running or set VITE_API_URL.");
     } finally {
       setIsLoading(false);
     }

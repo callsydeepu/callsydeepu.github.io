@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { usePortfolioData, RawSkill } from "../../context/PortfolioContext";
 import { CertificationItem, FeaturedProject } from "../../data";
+import { apiFetch } from "../../config/api";
 
 type TabType = "overview" | "certifications" | "skills" | "projects" | "bio" | "messages";
 
@@ -130,7 +131,7 @@ export function AdminDashboard() {
   // Fetch overview stats and messages
   const fetchOverview = async () => {
     try {
-      const res = await fetch("/api/admin/overview");
+      const res = await apiFetch("/api/admin/overview");
       if (res.ok) {
         const data = await res.json();
         setStats(data);
@@ -142,7 +143,7 @@ export function AdminDashboard() {
 
   const fetchMessages = async () => {
     try {
-      const res = await fetch("/api/admin/messages");
+      const res = await apiFetch("/api/admin/messages");
       if (res.ok) {
         const data = await res.json();
         setMessages(data.messages || []);
@@ -165,8 +166,9 @@ export function AdminDashboard() {
   // Handle Logout
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      await apiFetch("/api/auth/logout", { method: "POST" });
     } catch (e) {}
+    localStorage.removeItem("admin_token");
     setIsAuthenticated(false);
     setIsAdminOpen(false);
   };
@@ -228,9 +230,8 @@ export function AdminDashboard() {
         : "/api/admin/certifications";
       const method = editingCert ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(certForm)
       });
 
@@ -299,9 +300,8 @@ export function AdminDashboard() {
       const url = editingSkill ? `/api/admin/skills/${editingSkill.id}` : "/api/admin/skills";
       const method = editingSkill ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(skillForm)
       });
 
@@ -325,9 +325,8 @@ export function AdminDashboard() {
 
   const handleSetHighlightSkill = async (category: string, skillId: string) => {
     try {
-      const res = await fetch("/api/admin/skills/highlight", {
+      const res = await apiFetch("/api/admin/skills/highlight", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ category, skillId })
       });
       if (res.ok) {
@@ -405,9 +404,8 @@ export function AdminDashboard() {
         : "/api/admin/projects";
       const method = editingProject ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...projectForm,
           stack: stackArray,
@@ -447,9 +445,8 @@ export function AdminDashboard() {
       reordered[newIdx] = temp;
 
       const projectIds = reordered.map((p) => p.id);
-      const res = await fetch("/api/admin/projects/order", {
+      const res = await apiFetch("/api/admin/projects/order", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ projectIds })
       });
 
@@ -477,9 +474,8 @@ export function AdminDashboard() {
     setFormError(null);
 
     try {
-      const res = await fetch("/api/admin/bio", {
+      const res = await apiFetch("/api/admin/bio", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bioForm)
       });
 
@@ -516,7 +512,7 @@ export function AdminDashboard() {
       else if (type === "project") endpoint = `/api/admin/projects/${id}`;
       else if (type === "message") endpoint = `/api/admin/messages/${id}`;
 
-      const res = await fetch(endpoint, { method: "DELETE" });
+      const res = await apiFetch(endpoint, { method: "DELETE" });
 
       if (res.ok) {
         showToast(`"${title}" deleted successfully.`);
@@ -544,9 +540,8 @@ export function AdminDashboard() {
   // -------------------------------------------------------------
   const handleToggleMessageRead = async (id: string, currentRead: boolean) => {
     try {
-      const res = await fetch(`/api/admin/messages/${id}`, {
+      const res = await apiFetch(`/api/admin/messages/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_read: currentRead ? 0 : 1 })
       });
       if (res.ok) {

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { apiFetch } from "../config/api";
 import {
   profile as initialProfile,
   certifications as initialCertifications,
@@ -122,21 +123,33 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
 
   // Check auth on mount
   useEffect(() => {
-    fetch("/api/auth/verify")
-      .then((res) => res.json())
+    apiFetch("/api/auth/verify")
+      .then((res) => {
+        if (!res.ok) {
+          setIsAuthenticated(false);
+          localStorage.removeItem("admin_token");
+          return null;
+        }
+        return res.json();
+      })
       .then((data) => {
         if (data && data.authenticated) {
           setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+          localStorage.removeItem("admin_token");
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setIsAuthenticated(false);
+      });
   }, []);
 
   // Fetch live portfolio data from backend SQLite
   const refreshPortfolio = useCallback(async () => {
     try {
       setIsLoading(true);
-      const res = await fetch("/api/portfolio");
+      const res = await apiFetch("/api/portfolio");
       if (res.ok) {
         const data = await res.json();
         if (data.bio) setBio(data.bio);

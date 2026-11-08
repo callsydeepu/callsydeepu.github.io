@@ -103,7 +103,6 @@ export function ChapterToolkit() {
       }
 
       const isMobile = window.innerWidth < 768;
-      const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
       // 1. Initial Header Appearance
       if (badgeRef.current && headingRef.current) {
@@ -187,124 +186,131 @@ export function ChapterToolkit() {
         }
       });
 
-      // 3. Magnifying Hover Effect on Desktop, Subtle Tap Feedback on Touch
+      // 3. High-Performance Magnifying Hover Effect on Desktop & Tap Feedback on Touch
       const techItems = rowsRef.current?.querySelectorAll<HTMLElement>(".tech-magnify-item");
       const cleanupFns: Array<() => void> = [];
 
       if (techItems) {
         techItems.forEach((el) => {
           const isHighlight = el.getAttribute("data-is-highlight") === "true";
-          const glowEl = el.querySelector(".tech-glow");
-          const labelEl = el.querySelector(".tech-label");
+          const glowEl = el.querySelector<HTMLElement>(".tech-glow");
+          const labelEl = el.querySelector<HTMLElement>(".tech-label");
+          const parentMask = el.closest<HTMLElement>(".kinetic-mask");
 
-          // Reset initial transform
+          // Reset initial transform state
           gsap.set(el, { scale: 1, zIndex: 1, transformOrigin: "center center" });
 
-          if (isTouchDevice) {
-            // Touch device: Simple tap interaction without heavy mouse tracking
-            let tapTimeout: any;
+          let isHovered = false;
+          let touchTimer: any = null;
 
-            const onTouchStart = () => {
-              gsap.to(el, {
-                scale: 1.1,
-                zIndex: 20,
+          const activateMagnify = (targetScale: number) => {
+            if (parentMask) {
+              parentMask.style.overflow = "visible";
+            }
+            el.style.zIndex = "40";
+
+            gsap.to(el, {
+              scale: targetScale,
+              duration: 0.28,
+              ease: "power2.out",
+              overwrite: "auto",
+              force3D: true
+            });
+
+            if (glowEl) {
+              gsap.to(glowEl, {
+                opacity: isHighlight ? 1 : 0.85,
+                duration: 0.22,
+                ease: "power2.out",
+                overwrite: "auto"
+              });
+            }
+
+            if (labelEl && !isHighlight) {
+              gsap.to(labelEl, {
+                color: "#000000",
                 duration: 0.2,
                 ease: "power2.out",
                 overwrite: "auto"
               });
-              if (glowEl) {
-                gsap.to(glowEl, { opacity: 0.8, duration: 0.2 });
-              }
-            };
+            }
+          };
 
-            const onTouchEnd = () => {
-              clearTimeout(tapTimeout);
-              tapTimeout = setTimeout(() => {
-                gsap.to(el, {
-                  scale: 1,
-                  zIndex: 1,
-                  duration: 0.25,
-                  ease: "power2.out",
-                  overwrite: "auto"
-                });
-                if (glowEl) {
-                  gsap.to(glowEl, { opacity: 0, duration: 0.25 });
+          const deactivateMagnify = () => {
+            gsap.to(el, {
+              scale: 1,
+              duration: 0.28,
+              ease: "power3.out",
+              overwrite: "auto",
+              force3D: true,
+              onComplete: () => {
+                if (!isHovered) {
+                  el.style.zIndex = "1";
                 }
-              }, 250);
-            };
-
-            el.addEventListener("touchstart", onTouchStart, { passive: true });
-            el.addEventListener("touchend", onTouchEnd, { passive: true });
-
-            cleanupFns.push(() => {
-              clearTimeout(tapTimeout);
-              el.removeEventListener("touchstart", onTouchStart);
-              el.removeEventListener("touchend", onTouchEnd);
+              }
             });
-          } else {
-            // Desktop: Full GSAP magnifying hover interaction
-            const setScale = gsap.quickTo(el, "scale", { duration: 0.35, ease: "power3.out" });
 
-            const onEnter = () => {
-              el.style.zIndex = "30";
-              setScale(isHighlight ? 1.18 : 1.22);
-
-              if (labelEl && !isHighlight) {
-                gsap.to(labelEl, {
-                  color: "#0a0a0c",
-                  duration: 0.2,
-                  ease: "power2.out",
-                  overwrite: "auto"
-                });
-              }
-
-              if (glowEl) {
-                gsap.to(glowEl, {
-                  opacity: 1,
-                  duration: 0.25,
-                  ease: "power2.out",
-                  overwrite: "auto"
-                });
-              }
-            };
-
-            const onLeave = () => {
-              setScale(1);
-
-              gsap.to(el, {
-                zIndex: 1,
-                delay: 0.25,
-                duration: 0,
-                overwrite: false
+            if (glowEl) {
+              gsap.to(glowEl, {
+                opacity: 0,
+                duration: 0.25,
+                ease: "power2.out",
+                overwrite: "auto"
               });
+            }
 
-              if (labelEl && !isHighlight) {
-                gsap.to(labelEl, {
-                  color: "#141416",
-                  duration: 0.25,
-                  ease: "power2.out",
-                  overwrite: "auto"
-                });
-              }
+            if (labelEl && !isHighlight) {
+              gsap.to(labelEl, {
+                color: "#141416",
+                duration: 0.25,
+                ease: "power2.out",
+                overwrite: "auto"
+              });
+            }
+          };
 
-              if (glowEl) {
-                gsap.to(glowEl, {
-                  opacity: 0,
-                  duration: 0.25,
-                  ease: "power2.out",
-                  overwrite: "auto"
-                });
-              }
-            };
+          // Pointer Hover Handlers (Mouse, Stylus, Pointer)
+          const onPointerEnter = (e: PointerEvent) => {
+            if (e.pointerType === "touch") return; // Touch is handled by touchstart/touchend
+            isHovered = true;
+            activateMagnify(isHighlight ? 1.18 : 1.24);
+          };
 
-            el.addEventListener("pointerenter", onEnter);
-            el.addEventListener("pointerleave", onLeave);
+          const onPointerLeave = (e: PointerEvent) => {
+            if (e.pointerType === "touch") return;
+            isHovered = false;
+            deactivateMagnify();
+          };
 
-            cleanupFns.push(() => {
-              el.removeEventListener("pointerenter", onEnter);
-              el.removeEventListener("pointerleave", onLeave);
-            });
-          }
+          // Touch Handlers (Smooth tap interaction on mobile)
+          const onTouchStart = () => {
+            clearTimeout(touchTimer);
+            activateMagnify(isHighlight ? 1.12 : 1.16);
+          };
+
+          const onTouchEnd = () => {
+            clearTimeout(touchTimer);
+            touchTimer = setTimeout(() => {
+              deactivateMagnify();
+            }, 300);
+          };
+
+          el.addEventListener("pointerenter", onPointerEnter);
+          el.addEventListener("pointerleave", onPointerLeave);
+          el.addEventListener("pointercancel", onPointerLeave);
+          el.addEventListener("touchstart", onTouchStart, { passive: true });
+          el.addEventListener("touchend", onTouchEnd, { passive: true });
+          el.addEventListener("touchcancel", onTouchEnd, { passive: true });
+
+          cleanupFns.push(() => {
+            clearTimeout(touchTimer);
+            el.removeEventListener("pointerenter", onPointerEnter);
+            el.removeEventListener("pointerleave", onPointerLeave);
+            el.removeEventListener("pointercancel", onPointerLeave);
+            el.removeEventListener("touchstart", onTouchStart);
+            el.removeEventListener("touchend", onTouchEnd);
+            el.removeEventListener("touchcancel", onTouchEnd);
+          });
         });
       }
 

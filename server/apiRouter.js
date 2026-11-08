@@ -33,6 +33,45 @@ function getClientIp(req) {
   return req.socket?.remoteAddress || "127.0.0.1";
 }
 
+// Helper to calculate CORS headers
+function getCorsHeaders(req) {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    "https://saideepak.me",
+    "https://www.saideepak.me",
+    "https://callsydeepu.github.io",
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174"
+  ];
+  if (process.env.ALLOWED_ORIGINS) {
+    process.env.ALLOWED_ORIGINS.split(",").forEach((o) => {
+      const trimmed = o.trim();
+      if (trimmed) allowedOrigins.push(trimmed);
+    });
+  }
+
+  const isAllowed =
+    !origin ||
+    allowedOrigins.includes(origin) ||
+    origin.endsWith(".github.io") ||
+    origin.endsWith(".onrender.com") ||
+    origin.endsWith(".railway.app") ||
+    origin.includes("localhost") ||
+    origin.includes("127.0.0.1");
+
+  const allowedOrigin = isAllowed ? origin || "*" : "https://saideepak.me";
+
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Cookie"
+  };
+}
+
 // Send JSON response
 function sendJson(res, statusCode, data, headers = {}) {
   res.writeHead(statusCode, {
@@ -91,6 +130,24 @@ export async function handleApiRequest(req, res) {
   const pathname = url.pathname;
   const method = req.method.toUpperCase();
   const ip = getClientIp(req);
+  const corsHeaders = getCorsHeaders(req);
+
+  // Apply CORS headers to response
+  for (const [key, val] of Object.entries(corsHeaders)) {
+    if (res.setHeader) {
+      res.setHeader(key, val);
+    }
+  }
+
+  // Immediately reply to CORS preflight OPTIONS requests
+  if (method === "OPTIONS") {
+    res.writeHead(204, {
+      ...corsHeaders,
+      "Content-Length": "0"
+    });
+    res.end();
+    return;
+  }
 
   try {
     // -------------------------------------------------------------
@@ -222,8 +279,18 @@ export async function handleApiRequest(req, res) {
       resetRateLimit(ip, "login");
       const token = createSession();
 
-      // Secure cookie with SameSite=Strict and HttpOnly
-      const cookieHeader = `admin_session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`;
+      // Secure cookie: SameSite=None and Secure when accessed via HTTPS/cross-origin, Lax otherwise
+      const isSecure =
+        req.headers["x-forwarded-proto"] === "https" ||
+        req.socket?.encrypted ||
+        process.env.NODE_ENV === "production";
+      const sameSite = isSecure ? "None" : "Lax";
+      const secureFlag = isSecure ? "; Secure" : "";
+      const cookieHeader = `admin_session=${token}; Path=/; HttpOnly; SameSite=${sameSite}${secureFlag}; Max-Age=86400`;
+
+      if (res.setHeader) {
+        res.setHeader("Set-Cookie", cookieHeader);
+      }
 
       return sendJson(
         res,
@@ -249,7 +316,18 @@ export async function handleApiRequest(req, res) {
       if (token) {
         deleteSession(token);
       }
-      const clearCookie = `admin_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+      const isSecure =
+        req.headers["x-forwarded-proto"] === "https" ||
+        req.socket?.encrypted ||
+        process.env.NODE_ENV === "production";
+      const sameSite = isSecure ? "None" : "Lax";
+      const secureFlag = isSecure ? "; Secure" : "";
+      const clearCookie = `admin_session=; Path=/; HttpOnly; SameSite=${sameSite}${secureFlag}; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+
+      if (res.setHeader) {
+        res.setHeader("Set-Cookie", clearCookie);
+      }
+
       return sendJson(res, 200, { success: true }, { "Set-Cookie": clearCookie });
     }
 
