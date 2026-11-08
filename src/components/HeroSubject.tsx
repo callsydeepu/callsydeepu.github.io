@@ -1,14 +1,14 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ArrowDown, Sun, Moon, ArrowUpRight, Sparkles } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Sparkles } from "lucide-react";
 import { profile as defaultProfile } from "../data";
 import { usePortfolioData } from "../context/PortfolioContext";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function HeroSubject() {
-  const { bio } = usePortfolioData();
+  const { bio, isLightsOn } = usePortfolioData();
   const profile = { ...defaultProfile, ...bio };
 
   const heroRef = useRef<HTMLElement>(null);
@@ -16,33 +16,12 @@ export function HeroSubject() {
   const yellowPanelRef = useRef<HTMLDivElement>(null);
   const portraitRef = useRef<HTMLDivElement>(null);
 
-  // LIGHTS OFF mode on initial load by default
-  const [isLightsOn, setIsLightsOn] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
   // Coordinates for smooth cursor/touch-following spotlight
   const mousePos = useRef({ x: 0, y: 0 });
   const currentPos = useRef({ x: 0, y: 0 });
   const rafId = useRef<number | null>(null);
-
-  // Sync with Navbar lights toggle via custom window event
-  useEffect(() => {
-    const handleSync = (e: any) => {
-      if (e.detail && typeof e.detail.lightsOn === "boolean") {
-        setIsLightsOn(e.detail.lightsOn);
-      }
-    };
-    window.addEventListener("sync-hero-lights", handleSync);
-    return () => window.removeEventListener("sync-hero-lights", handleSync);
-  }, []);
-
-  const toggleLights = () => {
-    const nextState = !isLightsOn;
-    setIsLightsOn(nextState);
-    window.dispatchEvent(
-      new CustomEvent("sync-hero-lights", { detail: { lightsOn: nextState } })
-    );
-  };
 
   // Smooth spotlight movement interpolation with natural glide
   const updateSpotlight = useCallback(() => {
@@ -513,22 +492,7 @@ export function HeroSubject() {
         />
       )}
 
-      {/* TOP-RIGHT LIGHTS ON / OFF TOGGLE PILL */}
-      <div className="absolute top-20 sm:top-24 right-4 sm:right-8 lg:right-12 z-40">
-        <button
-          type="button"
-          onClick={toggleLights}
-          aria-label={isLightsOn ? "Switch to Lights Off" : "Switch to Lights On"}
-          className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-xl ${
-            isLightsOn
-              ? "bg-[#e2ee5a] text-[#0a0a0c] shadow-[0_0_25px_rgba(226,238,90,0.5)]"
-              : "bg-black/85 text-[#e2ee5a] border border-[#e2ee5a]/50 hover:bg-[#e2ee5a]/10"
-          }`}
-        >
-          {isLightsOn ? <Sun size={13} /> : <Moon size={13} />}
-          <span>{isLightsOn ? "LIGHTS OFF" : "LIGHTS ON"}</span>
-        </button>
-      </div>
+
 
       {/* Bottom Chapter Marker */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 w-full pt-4 flex items-center justify-between text-[10px] font-mono text-ivory-400/60 z-32">

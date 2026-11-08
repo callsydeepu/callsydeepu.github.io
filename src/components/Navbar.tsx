@@ -5,10 +5,10 @@ import { profile } from "../data";
 import { usePortfolioData } from "../context/PortfolioContext";
 
 export function Navbar() {
-  const { isAuthenticated, setIsAdminOpen, setIsLoginModalOpen } = usePortfolioData();
+  const { isAuthenticated, setIsAdminOpen, setIsLoginModalOpen, isLightsOn, toggleLights } =
+    usePortfolioData();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isLightsOn, setIsLightsOn] = useState(false);
   const [activeSection, setActiveSection] = useState("#subject");
 
   // Track scroll position for header background elevation
@@ -73,25 +73,6 @@ export function Navbar() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [mobileMenuOpen]);
-
-  // Listen and sync with Hero lights toggle
-  useEffect(() => {
-    const handleSync = (e: any) => {
-      if (e.detail && typeof e.detail.lightsOn === "boolean") {
-        setIsLightsOn(e.detail.lightsOn);
-      }
-    };
-    window.addEventListener("sync-hero-lights", handleSync);
-    return () => window.removeEventListener("sync-hero-lights", handleSync);
-  }, []);
-
-  const toggleLights = () => {
-    const nextState = !isLightsOn;
-    setIsLightsOn(nextState);
-    window.dispatchEvent(
-      new CustomEvent("sync-hero-lights", { detail: { lightsOn: nextState } })
-    );
-  };
 
   const handleNavClick = (href: string) => {
     setMobileMenuOpen(false);

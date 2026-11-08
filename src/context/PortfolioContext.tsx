@@ -65,6 +65,9 @@ interface PortfolioContextType {
   setIsLoginModalOpen: (open: boolean) => void;
   isAuthenticated: boolean;
   setIsAuthenticated: (auth: boolean) => void;
+  isLightsOn: boolean;
+  setIsLightsOn: (lightsOn: boolean | ((prev: boolean) => boolean)) => void;
+  toggleLights: () => void;
 }
 
 // Initial fallback TechStackGroups matching ChapterToolkit
@@ -120,6 +123,11 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLightsOn, setIsLightsOn] = useState(false);
+
+  const toggleLights = useCallback(() => {
+    setIsLightsOn((prev) => !prev);
+  }, []);
 
   // Check auth on mount
   useEffect(() => {
@@ -192,7 +200,10 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
         isLoginModalOpen,
         setIsLoginModalOpen,
         isAuthenticated,
-        setIsAuthenticated
+        setIsAuthenticated,
+        isLightsOn,
+        setIsLightsOn,
+        toggleLights
       }}
     >
       {children}
