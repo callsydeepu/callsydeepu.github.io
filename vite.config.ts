@@ -1,5 +1,8 @@
+// @ts-nocheck
 import { defineConfig, type PluginOption } from "vite";
 import react from "@vitejs/plugin-react";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 export default defineConfig(async ({ command }) => {
   const plugins: PluginOption[] = [react()];
@@ -7,12 +10,12 @@ export default defineConfig(async ({ command }) => {
   // Only load the admin CMS server middleware when running dev/preview server
   if (command === "serve") {
     try {
-      const apiPluginModule = "./server/apiPlugin.js";
-      // @ts-ignore
-      const { adminApiPlugin } = await import(/* @vite-ignore */ apiPluginModule);
+      const pluginFilePath = path.resolve(process.cwd(), "server/apiPlugin.js");
+      const pluginUrl = pathToFileURL(pluginFilePath).href;
+      const { adminApiPlugin } = await import(/* @vite-ignore */ pluginUrl);
       plugins.push(adminApiPlugin());
-    } catch {
-      // Dev CMS plugin skipped
+    } catch (err) {
+      console.error("[vite] Admin API plugin load error:", err);
     }
   }
 
