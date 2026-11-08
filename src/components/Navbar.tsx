@@ -91,9 +91,9 @@ export function Navbar() {
           : "bg-gradient-to-b from-[#0a0a0c]/85 via-[#0a0a0c]/40 to-transparent py-4 sm:py-4.5 border-b border-transparent"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 w-full grid grid-cols-2 lg:grid-cols-[1fr_auto_1fr] items-center gap-x-4 lg:gap-x-6 xl:gap-x-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 w-full flex items-center justify-between gap-6 lg:gap-8 xl:gap-12">
         {/* 1. Left: Brand / Logo Section */}
-        <div className="flex items-center justify-start justify-self-start">
+        <div className="flex items-center justify-start shrink-0">
           <a
             href="#subject"
             className="flex items-center gap-3 sm:gap-3.5 text-white group select-none shrink-0"
@@ -118,8 +118,8 @@ export function Navbar() {
           </a>
         </div>
 
-        {/* 2. Center: Minimal Navigation Links (Desktop: Laptops & Wide Displays) */}
-        <nav className="hidden lg:flex items-center justify-center justify-self-center gap-3.5 xl:gap-6 2xl:gap-8">
+        {/* 2. Center: Minimal Navigation Links Group */}
+        <nav className="hidden lg:flex items-center justify-center gap-4 xl:gap-6 2xl:gap-7 shrink-0">
           {navItems.map((item) => {
             const isActive = activeSection === item.href;
             return (
@@ -143,12 +143,12 @@ export function Navbar() {
                 {/* Active & Hover Underline Indicator Centered */}
                 {isActive ? (
                   <span
-                    className="absolute bottom-0 inset-x-1 h-[2px] bg-[#e2ee5a] shadow-[0_0_10px_rgba(226,238,90,0.7)] rounded-full transition-all duration-300"
+                    className="absolute bottom-0 inset-x-0 h-[2px] bg-[#e2ee5a] shadow-[0_0_10px_rgba(226,238,90,0.7)] rounded-full transition-all duration-300"
                     aria-hidden="true"
                   />
                 ) : (
                   <span
-                    className="absolute bottom-0 inset-x-1 h-[1.5px] bg-[#e2ee5a] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center rounded-full opacity-70"
+                    className="absolute bottom-0 inset-x-0 h-[1.5px] bg-[#e2ee5a] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center rounded-full opacity-70"
                     aria-hidden="true"
                   />
                 )}
@@ -157,10 +157,10 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* 3. Right: Action Controls (Desktop + Mobile in single grid cell) */}
-        <div className="flex items-center justify-end justify-self-end">
+        {/* 3. Right: Action Controls Group */}
+        <div className="flex items-center justify-end shrink-0">
           {/* Desktop Controls (>= 1024px): Lights, Resume & Admin Lock */}
-          <div className="hidden lg:flex items-center gap-2 xl:gap-2.5 shrink-0">
+          <div className="hidden lg:flex items-center gap-2.5 xl:gap-3 shrink-0">
             {/* Desktop LIGHTS ON / OFF Toggle */}
             <button
               type="button"
