@@ -1,0 +1,43 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+
+# Production build
+dist/
+dist-ssr/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.local
+
+# Database
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+
+# Scratch and temporary assets
+scratch/
+
+
+# Editor and OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
